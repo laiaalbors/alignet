@@ -1,0 +1,42 @@
+[project]
+name = "alignet"
+description = ""
+version = "0.0.1"
+authors = [
+    { name = "Laia Albors Zumel", email = "laia.albors@upc.edu" }
+]
+readme = "README.md"
+dependencies = [
+    "torch",
+    "torchvision",
+    "wandb==0.16.6",
+    "rasterio==1.3.10",
+    "pandas==2.0.3",
+    "rioxarray==0.13.4",
+    "omegaconf==2.3.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "jupyter"
+]
+
+[tool.yapf]
+based_on_style = "google"
+column_limit = 120
+
+[tool.pylint]
+max-line-length = 120
+disable = [
+    "C0114", # Missing module docstring
+    "C0115", # Missing class docstring
+    "C0116", # Missing function or method docstring
+    "C0301", # Line too long
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.pytest.ini_options]
+addopts = "-v"
+testpaths = ["tests"]  # This specifies the directory to look for tests
