@@ -13,7 +13,9 @@ dependencies = [
     "rasterio==1.3.10",
     "pandas==2.0.3",
     "rioxarray==0.13.4",
-    "omegaconf==2.3.0"
+    "omegaconf==2.3.0",
+    "tqdm==4.66.5",
+    "opencv-python==4.10.0.84"
 ]
 
 [project.optional-dependencies]
