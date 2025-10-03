@@ -78,6 +78,10 @@ class AligNetTransformer(nn.Module):
             pred_inverse = self.head2(out_inverse.view(B, -1))
         return pred_forward, pred_inverse
 
+    def forward_encoder(self, x):
+        x_emb = self.encode(x)
+        return x_emb
+
     def forward(self, x1, x2):
         x1_emb = self.encode(x1)
         x2_emb = self.encode(x2, stream=1 if self.shared_encoder else 2)
