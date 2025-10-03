@@ -15,7 +15,13 @@ dependencies = [
     "rioxarray==0.13.4",
     "omegaconf==2.3.0",
     "tqdm==4.66.5",
-    "opencv-python==4.10.0.84"
+    "opencv-python==4.10.0.84",
+    "lightning",
+    "matplotlib==3.7.5",
+    "scipy",
+    "transformers",
+    "accelerate"
+    "kornia"
 ]
 
 [project.optional-dependencies]
