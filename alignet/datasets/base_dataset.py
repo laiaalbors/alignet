@@ -16,6 +16,12 @@ class BaseDataset(Dataset):
                     transforms.ToTensor(),
                     lambda t: (t - t.min()) / (t.max() - t.min() + 1e-8)  # avoid /0
                 ])
+                self.data_augmentation = transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.RandomApply([transforms.ColorJitter(brightness=0.3, contrast=0.3)], p=0.7),
+                    transforms.RandomApply([transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0))], p=0.5),
+                    lambda t: (t - t.min()) / (t.max() - t.min() + 1e-8)  # safe normalization
+                ])
 
             elif norm_type == "mean-std":
                 mean = cfg.get("mean", None)
@@ -31,6 +37,12 @@ class BaseDataset(Dataset):
 
                 self.transforms = transforms.Compose([
                     transforms.ToTensor(),
+                    transforms.Normalize(mean=mean, std=std)
+                ])
+                self.data_augmentation = transforms.Compose([
+                    transforms.ToTensor(),
+                    transforms.RandomApply([transforms.ColorJitter(brightness=0.3, contrast=0.3)], p=0.7),
+                    transforms.RandomApply([transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0))], p=0.5),
                     transforms.Normalize(mean=mean, std=std)
                 ])
             else:

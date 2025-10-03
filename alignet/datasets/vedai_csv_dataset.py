@@ -24,6 +24,8 @@ class VEDAICSVDataset(BaseDataset):
         if cfg is None or "mode" not in cfg:
             print("[WARNING] Mode not specified in cfg. Defaulting to 'mono'.", flush=True)
         self.mode = (cfg or {}).get("mode", "mono")
+        self.data_augment = (cfg or {}).get("data_augmentation", False)
+        self.train = train
 
         self.label_to_idx = {'ir': 0, 'co': 1}
         self.df = pd.read_csv(root_path)
@@ -60,8 +62,12 @@ class VEDAICSVDataset(BaseDataset):
         image_2 = Image.open(path_2).convert('L')
                 
         # Apply the transformations to the original image
-        image_1 = self.transforms(image_1)
-        image_2 = self.transforms(image_2)
+        if self.data_augment and self.train:
+            image_1 = self.data_augmentation(image_1)
+            image_2 = self.data_augmentation(image_2)
+        else:
+            image_1 = self.transforms(image_1)
+            image_2 = self.transforms(image_2)
         image_depth, image_height, image_width = image_2.shape
 
         # Apply affine transformation
