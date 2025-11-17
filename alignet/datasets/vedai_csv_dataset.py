@@ -49,14 +49,14 @@ class VEDAICSVDataset(BaseDataset):
 
         sample = self.df.iloc[index]['image_number']
 
-        path_1 = f"/mnt/gpid08/datasets/registrat/VEDAI/Vehicules512/{modal1}/{sample:08d}_{modal1}.png"
-        path_2 = f"/mnt/gpid08/datasets/registrat/VEDAI/Vehicules512/{modal2}/{sample:08d}_{modal2}.png"
+        path_1 = f"data/VEDAI/{modal1}/{sample:08d}_{modal1}.png"
+        path_2 = f"data/VEDAI/{modal2}/{sample:08d}_{modal2}.png"
 
         image_1 = Image.open(path_1).convert('L')
         image_2 = Image.open(path_2).convert('L')
                 
         # Apply the transformations to the original image
-        if self.data_augment and self.train:
+        if self.radiometric_augmentation and self.train:
             image_1 = self.data_augmentation(image_1)
             image_2 = self.data_augmentation(image_2)
         else:

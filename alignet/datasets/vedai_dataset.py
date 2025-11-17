@@ -47,10 +47,8 @@ class VEDAIDataset(BaseDataset):
         else:
             modality1, modality2 = 'ir', 'co'
 
-        # path_1 = f"data/VEDAI/{modality1}/{sample}_{modality1}.png"
-        # path_2 = f"data/VEDAI/{modality2}/{sample}_{modality2}.png"
-        path_1 = f"/mnt/gpid08/datasets/registrat/VEDAI/Vehicules512/{modality1}/{sample}_{modality1}.png"
-        path_2 = f"/mnt/gpid08/datasets/registrat/VEDAI/Vehicules512/{modality2}/{sample}_{modality2}.png"
+        path_1 = f"data/VEDAI/{modality1}/{sample}_{modality1}.png"
+        path_2 = f"data/VEDAI/{modality2}/{sample}_{modality2}.png"
 
         image_1 = Image.open(path_1).convert('L')
         image_2 = Image.open(path_2).convert('L')
