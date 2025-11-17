@@ -8,6 +8,7 @@ from utils.utils import inverse_affine_matrix
 from utils.transforms import STN
 from utils.registry import LOSS_REGISTRY
 
+
 @LOSS_REGISTRY.register("RegistrationLoss")
 class RegistrationLoss(nn.Module):
     def __init__(self, alpha_1=10, alpha_2=1, alpha_3=1):
@@ -34,13 +35,23 @@ class RegistrationLoss(nn.Module):
     
     def symaffi(self, pred_inverse_tp, pred_forward_tp, device):
         b = pred_inverse_tp.shape[0]
-        idx3 = torch.Tensor([[[0,0,1]]]).to(device).repeat(b, 1, 1)
         unit = torch.Tensor([[[1,0,0],[0,1,0],[0,0,1]]]).to(device).repeat(b, 1, 1)
 
-        pred_inverse_tp = pred_inverse_tp.reshape(-1, 2, 3)
-        pred_inverse_tp_mat = torch.cat((pred_inverse_tp, idx3), dim=1)
-        pred_forward_tp = pred_forward_tp.reshape(-1, 2, 3)
-        pred_forward_tp_mat = torch.cat((pred_forward_tp, idx3), dim=1)  
+        if pred_inverse_tp.shape[-1] == 6:
+            idx3 = torch.Tensor([[[0,0,1]]]).to(device).repeat(b, 1, 1)
+            pred_inverse_tp = pred_inverse_tp.reshape(-1, 2, 3)
+            pred_inverse_tp_mat = torch.cat((pred_inverse_tp, idx3), dim=1)
+            pred_forward_tp = pred_forward_tp.reshape(-1, 2, 3)
+            pred_forward_tp_mat = torch.cat((pred_forward_tp, idx3), dim=1)  
+        elif pred_inverse_tp.shape[-1] == 8:
+            ones = torch.ones(b, 1, device=device, dtype=pred_inverse_tp.dtype)
+            pred_inverse_tp = torch.cat([pred_inverse_tp, ones], dim=1)
+            pred_inverse_tp_mat = pred_inverse_tp.reshape(-1, 3, 3)
+            pred_forward_tp = torch.cat([pred_forward_tp, ones], dim=1)
+            pred_forward_tp_mat = pred_forward_tp.reshape(-1, 3, 3)
+        else:
+            raise ValueError(f"Expected 6 (Affine) or 8 (Projective) prediction parameters, but got {pred_inverse_tp.shape[-1]}.")
+
         e = torch.matmul(pred_inverse_tp_mat, pred_forward_tp_mat)
 
         return torch.sum(abs(e-unit), dim=[-2,-1]).mean()
