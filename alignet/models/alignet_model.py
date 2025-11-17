@@ -26,8 +26,8 @@ class AligNetModel(pl.LightningModule):
             img_size=self.model_cfg["img_size"],
             num_transform_parameters=self.model_cfg["num_transform_parameters"], 
             pretrained_encoder_path=self.model_cfg.get("pretrained_encoder_path", "facebook/dinov3-vitl16-pretrain-sat493m"),
-            project_embed=self.model_cfg.get(self.model_cfg["project_embed"], False),
-            embed_dim=self.model_cfg.get(self.model_cfg["embed_dim"], None),
+            project_embed=self.model_cfg.get("project_embed", False),
+            embed_dim=self.model_cfg.get("embed_dim", None),
         )
 
         if self.train_cfg:
