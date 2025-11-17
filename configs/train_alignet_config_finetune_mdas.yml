@@ -1,0 +1,74 @@
+name: "alignet_imagenet_affine_finetune_mdas"
+
+trainer:
+  accelerator: cuda
+  devices: 1
+  precision: 32    # 32 / 16-mixed
+  seed: 33
+
+datasets:
+  train:
+    type: MDASDataset
+    path: files/train/vedai_train.txt 
+    norm: min-max
+    homography: affine    # affine / projective
+    mode: mono            # mono / multi
+  validation_1:
+    name: val_mdas_random_mono
+    type: MDASDataset 
+    path: files/valid/vedai_val.txt
+    norm: min-max
+    homography: affine    # affine / projective
+    mode: mono            # mono / multi
+  validation_2:
+    name: val_mdas_csv_mono
+    type: MDASCSVDataset
+    path: files/test/mdas_test_affine.csv
+    norm: min-max
+    homography: affine    # affine / projective
+    mode: mono            # mono / multi
+  validation_3:
+    name: val_mdas_csv_multi
+    type: MDASCSVDataset
+    path: files/test/mdas_test_affine.csv
+    norm: min-max
+    homography: affine    # affine / projective
+    mode: multi           # mono / multi
+
+model:
+  model_name: AligNetModel
+  architecture: AligNetViT
+  pretrained_encoder_path: "facebook/dinov3-vitl16-pretrain-sat493m"      # "facebook/dinov3-vitl16-pretrain-sat493m" / "facebook/dinov3-vitl16-pretrain-lvd1689m"
+  img_size: 256
+  input_channels: 1
+  attention_heads: 4
+  window_size: 16
+  num_transform_parameters: 6
+  project_embed: false
+
+loss:
+  type: RegistrationLoss
+
+train:
+  num_workers: 3
+  freeze_policy: encoder      # ~ / encoder / except_encoder / except_encoder_decoder
+  batch_size: 35
+  epochs: 20
+  lr: 0.0001
+  momentum: 0.9
+  scheduler: ExponentialLR    # ExponentialLR / WarmUp_ExponentialLR
+  scheduler_gamma: 0.99999
+  checkpoint_dir: "./experiments"
+  checkpoint_path: "checkpoints/affine_imagenet_best.ckpt"
+  checkpoint_interval: 200
+  val_interval: 0.2
+  log_interval: 50
+
+  losses:
+    alpha1: 10
+    alpha2: 1
+    alpha3: 1
+
+wandb:
+  project: alignet
+  resume_id: ~

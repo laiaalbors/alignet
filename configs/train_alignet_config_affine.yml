@@ -1,0 +1,67 @@
+name: "alignet_imagenet_affine"
+
+trainer:
+  accelerator: cuda
+  devices: 1
+  precision: 32    # 32 / 16-mixed
+  seed: 33
+
+datasets:
+  train:
+    type: ImageNetDataset
+    path: files/train/imagenet_train_files.txt
+    norm: min-max
+    homography: affine    # affine / projective
+    mode: mono
+  validation_1:
+    name: val_imagenet_affine_random
+    type: ImageNetDataset
+    path: files/valid/imagenet_valid_files.txt 
+    norm: min-max
+    homography: affine    # affine / projective
+    mode: mono
+  validation_2:
+    name: val_imagenet_affine_csv
+    type: ImageNetCSVDataset
+    path: files/valid/transformations_valid.csv 
+    norm: min-max
+    homography: affine    # affine / projective
+    mode: mono
+
+model:
+  model_name: AligNetModel
+  architecture: AligNetViT
+  pretrained_encoder_path: "facebook/dinov3-vitl16-pretrain-sat493m"      # "facebook/dinov3-vitl16-pretrain-sat493m" / "facebook/dinov3-vitl16-pretrain-lvd1689m"
+  img_size: 256
+  input_channels: 1
+  attention_heads: 4
+  window_size: 16
+  num_transform_parameters: 6
+  project_embed: false
+
+loss:
+  type: RegistrationLoss
+
+train:
+  num_workers: 3
+  freeze_policy: encoder      # ~ / encoder / except_encoder / except_encoder_decoder
+  batch_size: 35
+  epochs: 20
+  lr: 0.0001
+  momentum: 0.9
+  scheduler: ExponentialLR    # ExponentialLR / WarmUp_ExponentialLR
+  scheduler_gamma: 0.99999
+  checkpoint_dir: "./experiments"
+  checkpoint_path: ~
+  checkpoint_interval: 200
+  val_interval: 0.2
+  log_interval: 50
+
+  losses:
+    alpha1: 10
+    alpha2: 1
+    alpha3: 1
+
+wandb:
+  project: alignet
+  resume_id: ~

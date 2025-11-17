@@ -1,0 +1,57 @@
+name: "test_alignet_imagenet"
+
+trainer:
+  accelerator: cuda
+  devices: 1
+  precision: 32
+  seed: 33
+
+datasets:
+  test_1:
+    name: val_vedai_affine
+    type: VEDAICSVDataset
+    path: files/test/vedai_test_affine.csv
+    norm: min-max
+    homography: affine
+    mode: multi
+  test_2:
+    name: val_mdas_affine
+    type: MDASCSVDataset
+    path: files/test/mdas_test_affine.csv
+    norm: min-max
+    homography: affine
+    mode: multi
+
+model:
+  model_name: AligNetModel
+  architecture: AligNetViT
+  pretrained_encoder_path: "facebook/dinov3-vitl16-pretrain-sat493m"
+  img_size: 256
+  input_channels: 1
+  attention_heads: 4
+  window_size: 16
+  num_transform_parameters: 6
+
+test:
+  num_workers: 3
+  checkpoint_path: "./checkpoints/affine_imagenet_best.ckpt"
+
+  metrics:
+    rmse:
+      type: calculate_rmse
+      better: lower
+    mpd:
+      type: calculate_mpd
+      better: lower
+    iou:
+      type: calculate_iou
+      better: higher
+    mi:
+      type: calculate_mi
+      better: higher
+    re:
+      type: calculate_re
+      better: lower
+    h_err:
+      type: calculate_h_err
+      better: lower
