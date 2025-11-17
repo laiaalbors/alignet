@@ -99,28 +99,28 @@ Evaluate ALIGNet on VEDAI and MDAS:
 Affine model:
 
 ```bash
-python test.py --config "configs/test_alignet_config_affine.yml"
+python alignet/test.py --config "configs/test_alignet_config_affine.yml"
 ```
 
 Projective model:
 
 ```bash
-python test.py --config "configs/test_alignet_config_projective.yml"
+python alignet/test.py --config "configs/test_alignet_config_projective.yml"
 ```
 
 ## Fine-tuning
 
 Fine-tune pretrained ImageNet checkpoints on VEDAI or MDAS:
 ```bash
-python train.py --config "configs/train_alignet_config_finetune_vedai.yml"
-python train.py --config "configs/train_alignet_config_finetune_mdas.yml"
+python alignet/train.py --config "configs/train_alignet_config_finetune_vedai.yml"
+python alignet/train.py --config "configs/train_alignet_config_finetune_mdas.yml"
 ```
 
 ## Training from Scratch
 
 If you wish to train ALIGNet on ImageNet:
 ```bash
-python train.py --config "configs/train_alignet_config_affine.yml"
-python train.py --config "configs/train_alignet_config_projective.yml"
+python alignet/train.py --config "configs/train_alignet_config_affine.yml"
+python alignet/train.py --config "configs/train_alignet_config_projective.yml"
 ```
 
