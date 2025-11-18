@@ -3,7 +3,7 @@ name = "alignet"
 description = ""
 version = "0.0.1"
 authors = [
-    { name = "Laia Albors Zumel", email = "laia.albors@upc.edu" }
+    { name = "Anonymous", email = "anonymous@none.com" }
 ]
 readme = "README.md"
 dependencies = [

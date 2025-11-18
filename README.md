@@ -1,6 +1,7 @@
 # ALIGNet: Self-supervised Adversarial Learning for Multimodal Remote Sensing Image registration
 
-Official implementation of **ALIGNet**.  
+This repository contains the anonymized implementation of **ALIGNet**, submitted to CVPR 2025.
+
 ALIGNet introduces a self-supervised, Transformer-based framework for **multimodal remote sensing image registration** that achieves **state-of-the-art zero-shot performance**.
 
 
@@ -35,7 +36,7 @@ To set up the environment for ALIGNet, you'll need the following dependencies:
 First, clone the repository and navigate to the project directory:
 
 ```bash
-git clone git@github.com:laiaalbors/alignet.git
+git clone https://github.com/anonymous-submission/alignet.git
 cd alignet
 ```
 
@@ -87,7 +88,8 @@ python data/MDAS/prepare_mdas.py   # Update base_path before running!
 **ImageNet**
 ```bash
 mv ILSVRC2015 ImageNet/
-rm ImageNet/ILSVRC2015/Annotations ImageNet/ILSVRC2015/ImageSets ImageNet/ILSVRC2015/Data/DET/train/ILSVRC2013_train/n*   # Optional cleanup
+rm ImageNet/ILSVRC2015/Annotations ImageNet/ILSVRC2015/ImageSets    # Optional cleanup
+rm ImageNet/ILSVRC2015/Data/DET/train/ILSVRC2013_train/n*           # Optional cleanup
 ```
 
 > 💡 ImageNet is only required if you plan to retrain ALIGNet. Pretrained checkpoints are already provided for evaluation and fine-tuning.
