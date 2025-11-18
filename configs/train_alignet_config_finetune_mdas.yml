@@ -9,14 +9,14 @@ trainer:
 datasets:
   train:
     type: MDASDataset
-    path: files/train/vedai_train.txt 
+    path: data/MDAS/train
     norm: min-max
     homography: affine    # affine / projective
     mode: mono            # mono / multi
   validation_1:
     name: val_mdas_random_mono
     type: MDASDataset 
-    path: files/valid/vedai_val.txt
+    path: data/MDAS/valid
     norm: min-max
     homography: affine    # affine / projective
     mode: mono            # mono / multi

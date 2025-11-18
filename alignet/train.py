@@ -148,7 +148,7 @@ if __name__ == "__main__":
 
     if config["train"]["checkpoint_path"]:
         print(f"[TRAIN] Loading weights from {config['train']['checkpoint_path']}...", flush=True)
-        state_dict = torch.load(config["train"]["checkpoint_path"], map_location='cpu')["state_dict"]
+        state_dict = torch.load(config["train"]["checkpoint_path"], map_location='cpu', weights_only=False)["state_dict"]
         model.load_state_dict(state_dict, strict=False)
 
         print("\n[VAL] Running validation before training...\n", flush=True)

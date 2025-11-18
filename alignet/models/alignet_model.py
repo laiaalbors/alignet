@@ -173,14 +173,14 @@ class AligNetModel(pl.LightningModule):
 
     def configure_optimizers(self):
         num_steps_epoch = self.trainer.num_training_batches
-        opt = torch.optim.Adam(self.model.parameters(), lr=self.lr_reg)
+        opt = torch.optim.Adam(self.model.parameters(), lr=self.lr)
 
         print(f"[AligNetModel] self.scheduler: {self.scheduler}", flush=True)
 
         if self.scheduler == "ExponentialLR":
-            sch = torch.optim.lr_scheduler.ExponentialLR(opt_g, gamma=self.scheduler_gamma)
+            sch = torch.optim.lr_scheduler.ExponentialLR(opt, gamma=self.scheduler_gamma)
             return {
-                "optimizer": opt_g, 
+                "optimizer": opt, 
                 "lr_scheduler": {
                     "scheduler": sch, 
                     "interval": "epoch", 
@@ -188,13 +188,13 @@ class AligNetModel(pl.LightningModule):
                 }
             }
         elif self.scheduler == "WarmUp_ExponentialLR":
-            # Warmup for 3 epochs (linearly from lr_reg/100 → lr_reg)
-            warmup = torch.optim.lr_scheduler.LinearLR(opt_g, start_factor=0.01, end_factor=1.0, total_iters=3*num_steps_epoch)
+            # Warmup for 3 epochs (linearly from lr/100 → lr)
+            warmup = torch.optim.lr_scheduler.LinearLR(opt, start_factor=0.01, end_factor=1.0, total_iters=3*num_steps_epoch)
 
             # Exponential decay afterwards
-            decay = torch.optim.lr_scheduler.ExponentialLR(opt_g, gamma=self.scheduler_gamma)
+            decay = torch.optim.lr_scheduler.ExponentialLR(opt, gamma=self.scheduler_gamma)
 
-            scheduler = torch.optim.lr_scheduler.SequentialLR(opt_g, schedulers=[warmup, decay], milestones=[3*num_steps_epoch])
+            scheduler = torch.optim.lr_scheduler.SequentialLR(opt, schedulers=[warmup, decay], milestones=[3*num_steps_epoch])
 
             return {
                 "optimizer": opt,
