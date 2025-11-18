@@ -38,16 +38,16 @@ class VEDAICSVDataset(BaseDataset):
 
     def __getitem__(self, index):
         if self.mode=='mono':
-            idx = index.copy()
+            idx = index
             index = index % len(self.df)
             modal, label = ("ir", 0) if idx % 2 else ("co", 1)
             modal1 = modal2 = modal
-            label_ir = label_co = label
+            label_1 = label_2 = label
         else:
             modal1, label_1 = "ir", 0
             modal2, label_2 = "co", 1
 
-        sample = self.df.iloc[index]['image_number']
+        sample = int(self.df.iloc[index]['image_number'])
 
         path_1 = f"data/VEDAI/{modal1}/{sample:08d}_{modal1}.png"
         path_2 = f"data/VEDAI/{modal2}/{sample:08d}_{modal2}.png"

@@ -101,6 +101,8 @@ class MDASCSVDataset(BaseDataset):
         print(f"Unique image_path2 in df: {len(self.df['image_path2'].unique())}", flush=True)
     
     def resample_geotiff(self, file_path):
+        file_path = str(file_path)
+
         # Open the original dataset
         with rasterio.open(file_path) as dataset:
             # Read only the first band
@@ -174,7 +176,7 @@ class MDASCSVDataset(BaseDataset):
         # Random vertical flip
         if self.train and random.random() > 0.5:
             image_r = F.vflip(image_r)
-            if self.train:
+            if self.mode == 'multi':
                 image_s = F.vflip(image_s)
 
         if self.homography == 'affine':
@@ -196,7 +198,10 @@ class MDASCSVDataset(BaseDataset):
             )
             inverse_matrix = torch.tensor(inverse_matrix, dtype=torch.float32)
             label_r = torch.tensor(label_r, dtype=torch.long)
-            label_s = torch.tensor(label_s, dtype=torch.long)
+            if self.mode == 'multi':
+                label_s = torch.tensor(label_s, dtype=torch.long)
+            else:
+                label_s = label_r
 
             # Inverse transformation matrix
             inv_affine = np.array([

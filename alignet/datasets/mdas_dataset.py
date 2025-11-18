@@ -79,6 +79,8 @@ class MDASDataset(BaseDataset):
                 self.labels_pairs.extend([[self.label_to_idx[label1], self.label_to_idx[label2]]] * len(file_paths_per_label[label1]))
 
     def resample_geotiff(self, file_path):
+        file_path = str(file_path)
+        
         # Open the original dataset
         with rasterio.open(file_path) as dataset:
             # Read only the first band
