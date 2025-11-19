@@ -49,6 +49,23 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 pip install .
 ```
 
+## Download Checkpoints
+
+To reproduce the results reported in the paper, you can download the pretrained ALIGNet checkpoints from the following Zenodo link: https://zenodo.org/records/17647715
+
+The archive contains two models:
+
+*   **Affine**: trained on ImageNet with synthetic affine transformations
+*   **Projective**: trained on ImageNet with synthetic projective transformations
+
+After downloading, create a folder named `checkpoints/` in the root of the repo and place the files inside:
+```bash
+mkdir checkpoints
+mv /path/to/files/*.ckpt checkpoints/
+```
+
+The scripts will automatically load the weights from this folder.
+
 ## Data Preparation
 
 Download the following datasets: 
