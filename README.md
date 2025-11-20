@@ -1,6 +1,6 @@
 # ALIGNet: Self-supervised Adversarial Learning for Multimodal Remote Sensing Image registration
 
-This repository contains the anonymized implementation of **ALIGNet**, submitted to CVPR 2025.
+This repository contains the anonymized implementation of **ALIGNet**, submitted to CVPR 2026.
 
 ALIGNet introduces a self-supervised, Transformer-based framework for **multimodal remote sensing image registration** that achieves **state-of-the-art zero-shot performance**.
 
