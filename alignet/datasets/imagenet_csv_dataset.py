@@ -28,6 +28,7 @@ class ImageNetCSVDataset(BaseDataset):
         self.labels = [0]  # placeholder
         self.train = train
         self.radiometric_augmentation = cfg.get("rad_aug", True)
+        self.homography = cfg.get("homography", "affine")
         self.mode = (cfg or {}).get("mode", "mono")
         if self.mode == 'multi':
             print(f"[Warning] ImageNet cannot be used with multimodal training. Switching to mono.", flush=True)
