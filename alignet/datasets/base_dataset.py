@@ -17,7 +17,7 @@ class BaseDataset(Dataset):
                     lambda t: (t - t.min()) / (t.max() - t.min() + 1e-8)  # avoid /0
                 ])
                 self.data_augmentation = transforms.Compose([
-                    transforms.ToTensor(),
+                    # transforms.ToTensor(),
                     transforms.RandomApply([transforms.ColorJitter(brightness=0.3, contrast=0.3)], p=0.7),
                     transforms.RandomApply([transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0))], p=0.5),
                     lambda t: (t - t.min()) / (t.max() - t.min() + 1e-8)  # safe normalization
