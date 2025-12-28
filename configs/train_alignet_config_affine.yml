@@ -10,6 +10,7 @@ datasets:
   train:
     type: ImageNetDataset
     path: files/train/imagenet_train_files.txt
+    rad_aug: True
     norm: min-max
     homography: affine    # affine / projective
     mode: mono
