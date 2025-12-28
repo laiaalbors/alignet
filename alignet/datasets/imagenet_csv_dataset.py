@@ -27,7 +27,7 @@ class ImageNetCSVDataset(BaseDataset):
         self.img_size = img_size
         self.labels = [0]  # placeholder
         self.train = train
-        self.radiometric_augmentation = cfg.get("rad_aug", True)
+        self.radiometric_augmentation = cfg.get("rad_aug", False)
         self.homography = cfg.get("homography", "affine")
         self.mode = (cfg or {}).get("mode", "mono")
         if self.mode == 'multi':

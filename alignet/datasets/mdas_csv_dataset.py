@@ -162,10 +162,13 @@ class MDASCSVDataset(BaseDataset):
             label_s = self.label_to_idx[self.df.iloc[index]['label2']]
             image_s = self._cache[str(file_path_s)]
 
+        image_r = self.transforms(image_r)
+        if self.mode == 'multi':
+            image_s = self.transforms(image_s)
         if self.radiometric_augmentation and self.train:
-            image_r = self.data_augmentation(image if self.mode == 'mono' else image_r)
+            image_r = self.data_augmentation(image_r)
             if self.mode == 'multi':
-                image_s = self.data_augmentation(image if self.mode == 'mono' else image_s)
+                image_s = self.data_augmentation(image_s)
         image_depth, image_height, image_width = image_r.shape
 
         # Random horizontal flip

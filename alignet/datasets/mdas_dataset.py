@@ -137,9 +137,11 @@ class MDASDataset(BaseDataset):
             image = self._cache[str(file_path)]
 
         # Apply the transformations to the original image
+        image_r = self.transforms(image if self.mode == 'mono' else image_r)
+        image_s = self.transforms(image if self.mode == 'mono' else image_s)
         if self.radiometric_augmentation and self.train:
-            image_r = self.data_augmentation(image if self.mode == 'mono' else image_r)
-            image_s = self.data_augmentation(image if self.mode == 'mono' else image_s)
+            image_r = self.data_augmentation(image_r)
+            image_s = self.data_augmentation(image_s)
         image_depth, image_height, image_width = image.shape
 
         label = torch.tensor(label, dtype=torch.long)

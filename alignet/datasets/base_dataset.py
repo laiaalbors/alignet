@@ -12,12 +12,12 @@ class BaseDataset(Dataset):
 
             if norm_type == "min-max":
                 # per-image min-max normalization
-                self.transforms = transforms.Compose([
-                    transforms.ToTensor(),
-                    lambda t: (t - t.min()) / (t.max() - t.min() + 1e-8)  # avoid /0
-                ])
+                tfs = [transforms.ToTensor()]
+                if not cfg.get("rad_aug", False):
+                    tfs.append(lambda t: (t - t.min()) / (t.max() - t.min() + 1e-8))
+                self.transforms = transforms.Compose(tfs)
+
                 self.data_augmentation = transforms.Compose([
-                    # transforms.ToTensor(),
                     transforms.RandomApply([transforms.ColorJitter(brightness=0.3, contrast=0.3)], p=0.7),
                     transforms.RandomApply([transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0))], p=0.5),
                     lambda t: (t - t.min()) / (t.max() - t.min() + 1e-8)  # safe normalization
@@ -35,12 +35,12 @@ class BaseDataset(Dataset):
                 if not isinstance(std, list):
                     std = list(std) if hasattr(std, "__iter__") and not isinstance(std, str) else [std]
 
-                self.transforms = transforms.Compose([
-                    transforms.ToTensor(),
-                    transforms.Normalize(mean=mean, std=std)
-                ])
+                tfs = [transforms.ToTensor()]
+                if not cfg.get("rad_aug", False):
+                    tfs.append(transforms.Normalize(mean=mean, std=std))
+                self.transforms = transforms.Compose(tfs)
+
                 self.data_augmentation = transforms.Compose([
-                    transforms.ToTensor(),
                     transforms.RandomApply([transforms.ColorJitter(brightness=0.3, contrast=0.3)], p=0.7),
                     transforms.RandomApply([transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 2.0))], p=0.5),
                     transforms.Normalize(mean=mean, std=std)
