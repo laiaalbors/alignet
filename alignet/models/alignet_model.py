@@ -116,7 +116,7 @@ class AligNetModel(pl.LightningModule):
             sch.step()
 
         # Logging
-        self.log('train/loss_reg', loss_reg, prog_bar=True, sync_dist=True)
+        self.log('train/loss', loss_reg, prog_bar=True, sync_dist=True)
         self.log('train/loss_tp',  loss_tp,  prog_bar=True, sync_dist=True)
         self.log('train/loss_nmi', loss_nmi, sync_dist=True)
         self.log('train/loss_sym', loss_sym, sync_dist=True)
@@ -137,7 +137,7 @@ class AligNetModel(pl.LightningModule):
         )
 
         log_dict = {
-            f"{self.validation_names[dataloader_idx]}/loss_reg": loss_reg,
+            f"{self.validation_names[dataloader_idx]}/loss": loss_reg,
             f"{self.validation_names[dataloader_idx]}/loss_tp": loss_tp,
             f"{self.validation_names[dataloader_idx]}/loss_nmi": loss_nmi,
             f"{self.validation_names[dataloader_idx]}/loss_sym": loss_sym,

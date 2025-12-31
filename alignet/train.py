@@ -115,7 +115,7 @@ if __name__ == "__main__":
     val_ckpt = ModelCheckpoint(
         dirpath=os.path.join(config["train"]["checkpoint_dir"], config["name"]),
         filename="best-{epoch:02d}-{val_loss:.4f}",
-        monitor=f"{val_names[0]}/loss_reg",
+        monitor=f"{val_names[0]}/loss",
         mode="min",
         save_top_k=1,
         save_on_train_epoch_end=True,
