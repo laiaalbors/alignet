@@ -34,6 +34,8 @@ class MDASCSVDataset(BaseDataset):
             transform (callable, optional): Optional transform to be applied on an image.
             target_resolution (float): Resolution in which the data will be treated in (in meters).
         """
+        super().__init__(cfg=cfg, train=train)
+        
         self.root = Path(root_path)
         self.root_path = root_path
         self.target_resolution = target_resolution
@@ -44,20 +46,18 @@ class MDASCSVDataset(BaseDataset):
         if cfg is None or "mode" not in cfg:
             print("[WARNING] Mode not specified in cfg. Defaulting to 'mono'.", flush=True)
         self.mode = (cfg or {}).get("mode", "mono")
-        self.radiometric_augmentation = (cfg or {}).get("rad_aug", False)
 
 
         self.file_paths = []
         self.labels = []
-        self.label_to_idx = {}  # Map label names to integers
         self._cache = get_shared_cache()
 
         self.df = pd.read_csv(root_path)
+        self.data_path = cfg['data_path']
 
-        self.label_to_idx = {}
+        self.label_to_idx = {'EeteS_EnMAP_10m': 0, 'EeteS_EnMAP_30m': 1, 'Sentinel-1': 2, '3K_DSM': 3, '3K_RGB': 4, 'EeteS_Sentinel_2_10m': 5, 'HySpex': 6, 'Sentinel-2': 7}
         file_paths_per_label = {}
         for idx, label in enumerate(self.df['label'].unique()):
-            self.label_to_idx[label] = idx
             filepath = self.df[self.df['label'] == label]['image_path'].unique()[0]
             file_paths_per_label[label] = [filepath]
 
@@ -91,9 +91,10 @@ class MDASCSVDataset(BaseDataset):
         else:
             for idx, label in enumerate(self.df['label2'].unique()):
                 if label not in self.label_to_idx.keys():
-                    self.label_to_idx[label] = idx
                     filepath = self.df[self.df['label2'] == label]['image_path2'].unique()[0]
                     file_paths_per_label[label] = [filepath]
+
+        print(f"self.label_to_idx: {self.label_to_idx}", flush=True)
 
         self.file_paths = list(set(self.df['image_path'].unique()) | set(self.df['image_path2'].unique())) #self.df['image_path'].unique()
 
@@ -146,29 +147,27 @@ class MDASCSVDataset(BaseDataset):
 
 
     def __getitem__(self, index):
-        file_path_r = self.df.iloc[index]['image_path']
+        file_path_r = os.path.join(self.data_path, self.df.iloc[index]['image_path'])
         label_r = self.label_to_idx[self.df.iloc[index]['label']]
         
         offset1 = self.df.iloc[index]['offset1']
         offset2 = self.df.iloc[index]['offset2']
         h = self.df.iloc[index]['h']
         w = self.df.iloc[index]['w']
+        # h, w = self.img_size, self.img_size
 
         # Load the GeoTIFF image
         image_r = self._cache[str(file_path_r)]
 
         if self.mode == 'multi':
-            file_path_s = self.df.iloc[index]['image_path2']
+            file_path_s = os.path.join(self.data_path, self.df.iloc[index]['image_path2'])
             label_s = self.label_to_idx[self.df.iloc[index]['label2']]
             image_s = self._cache[str(file_path_s)]
 
-        image_r = self.transforms(image_r)
-        if self.mode == 'multi':
-            image_s = self.transforms(image_s)
-        if self.radiometric_augmentation and self.train:
-            image_r = self.data_augmentation(image_r)
-            if self.mode == 'multi':
-                image_s = self.data_augmentation(image_s)
+        if not isinstance(image_r, torch.Tensor):
+            image_r = self.transforms_percentile(image_r)
+        if self.mode == 'multi' and not isinstance(image_s, torch.Tensor):
+            image_s = self.transforms_percentile(image_s)
         image_depth, image_height, image_width = image_r.shape
 
         # Random horizontal flip
@@ -200,12 +199,7 @@ class MDASCSVDataset(BaseDataset):
                 shear=[shear, shear]
             )
             inverse_matrix = torch.tensor(inverse_matrix, dtype=torch.float32)
-            label_r = torch.tensor(label_r, dtype=torch.long)
-            if self.mode == 'multi':
-                label_s = torch.tensor(label_s, dtype=torch.long)
-            else:
-                label_s = label_r
-
+            
             # Inverse transformation matrix
             inv_affine = np.array([
                 [inverse_matrix[0], inverse_matrix[1], inverse_matrix[2]],
@@ -226,8 +220,15 @@ class MDASCSVDataset(BaseDataset):
             inv_affine = torch.inverse(forward_affine)
             inv_affine = inv_affine / inv_affine[2,2]
             inverse_matrix = inv_affine.reshape(9)[:-1]
+            transformed_image_s = transformed_image_s.unsqueeze(0)
             assert not torch.isnan(forward_matrix).any(), "NaNs detected in forward_matrix!"
             assert not torch.isnan(inverse_matrix).any(), "NaNs detected in inverse_matrix!"
+
+        label_r = torch.tensor(label_r, dtype=torch.long)
+        if self.mode == 'multi':
+            label_s = torch.tensor(label_s, dtype=torch.long)
+        else:
+            label_s = label_r
 
         # Normalize Affine Transformation Matrix
         forward_matrix_norm = normalize_affine_matrix(forward_matrix.squeeze(), image_width, image_height)

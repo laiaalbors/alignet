@@ -31,7 +31,8 @@ class ImageNetDataset(BaseDataset):
         self.labels = [0]  # placeholder
         self.train = train
         self.homography = cfg.get("homography", "affine")
-        self.radiometric_augmentation = cfg.get("rad_aug", False)
+        self.use_traditional_aug = cfg.get("traditional_augmentation", False)
+        self.use_sensor_like_aug = cfg.get("sensor_like_augmentation", False)
         self.mode = (cfg or {}).get("mode", "mono")
         if self.mode == 'multi':
             print(f"[Warning] ImageNet cannot be used with multimodal training. Switching to mono.", flush=True)
@@ -42,7 +43,11 @@ class ImageNetDataset(BaseDataset):
     def __getitem__(self, index):
         file_path = self.file_paths[index]
 
-        with Image.open(file_path).convert("L") as image_pil:
+        with Image.open(file_path) as image_pil:
+            if not self.train:
+                image_pil = image_pil.convert("L")
+            else:
+                image_pil = image_pil.convert("RGB")
             # Apply base transforms (tensor + normalization)
             image = self.transforms(image_pil)
             image_depth, image_height, image_width = image.shape
@@ -94,10 +99,13 @@ class ImageNetDataset(BaseDataset):
             if len(transformed_image.shape) == 2:
                 transformed_image = transformed_image.unsqueeze(0)
 
-            # Radiometric augmentation
-            if self.train and self.radiometric_augmentation:
-                image = self.data_augmentation(image)
-                transformed_image = self.data_augmentation(transformed_image)
+            # Augmentation
+            if self.train and self.use_traditional_aug:
+                image = self.traditional_augmentation(image)
+                transformed_image = self.traditional_augmentation(transformed_image)
+            elif self.train and self.use_sensor_like_aug:
+                image = self.sensor_like_augmentation(image)
+                transformed_image = self.sensor_like_augmentation(transformed_image)
 
             # Normalize affine matrices
             forward_matrix_norm = normalize_affine_matrix(forward_matrix.squeeze(), image_width, image_height)

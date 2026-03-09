@@ -31,6 +31,8 @@ class MDASDataset(BaseDataset):
             transform (callable, optional): Optional transform to be applied on an image.
             target_resolution (float): Resolution in which the data will be treated in (in meters).
         """
+        super().__init__(cfg=cfg, train=train)
+        
         self.root = Path(root_path)
         self.target_resolution = target_resolution
         self.img_size = img_size
@@ -41,7 +43,6 @@ class MDASDataset(BaseDataset):
             print("[WARNING] Mode not specified in cfg. Defaulting to 'mono'.", flush=True)
         self.mode = (cfg or {}).get("mode", "mono")
         self.homography = cfg.get("homography", "affine")
-        self.radiometric_augmentation = (cfg or {}).get("rad_aug", False)
 
         self.paired_crop = PairedRandomCrop(self.img_size, contained=True)
 
@@ -137,14 +138,17 @@ class MDASDataset(BaseDataset):
             image = self._cache[str(file_path)]
 
         # Apply the transformations to the original image
-        image_r = self.transforms(image if self.mode == 'mono' else image_r)
-        image_s = self.transforms(image if self.mode == 'mono' else image_s)
-        if self.radiometric_augmentation and self.train:
-            image_r = self.data_augmentation(image_r)
-            image_s = self.data_augmentation(image_s)
-        image_depth, image_height, image_width = image.shape
+        if (self.mode == 'multi' and not isinstance(image_r, torch.Tensor)) or (self.mode == 'mono' and not isinstance(image, torch.Tensor)):
+            image_r = self.transforms_percentile(image if self.mode == 'mono' else image_r)
+        if (self.mode == 'multi' and not isinstance(image_s, torch.Tensor)) or (self.mode == 'mono' and not isinstance(image, torch.Tensor)):
+            image_s = self.transforms_percentile(image if self.mode == 'mono' else image_s)
+        image_depth, image_height, image_width = image_r.shape
 
-        label = torch.tensor(label, dtype=torch.long)
+        if self.mode == 'multi':
+            label_r = torch.tensor(label_r, dtype=torch.long)
+            label_s = torch.tensor(label_s, dtype=torch.long)
+        else:
+            label_r = label_s = torch.tensor(label, dtype=torch.long)
         
         # Random horizontal flip
         if random.random() > 0.5:
@@ -228,7 +232,7 @@ class MDASDataset(BaseDataset):
         # Create masks
         mask_original, mask_transformed = create_masks(int(offset1), int(offset2), int(h), int(w), (int(image_depth), int(image_height), int(image_width)), inverse_matrix_norm, forward_matrix_norm, inverse_matrix_crop_norm, forward_matrix_crop_norm, contained)
 
-        return image_crop, transformed_image_crop, label, label, inverse_matrix_crop_norm, forward_matrix_crop_norm, mask_original, mask_transformed
+        return image_crop, transformed_image_crop, label_r, label_s, inverse_matrix_crop_norm, forward_matrix_crop_norm, mask_original, mask_transformed
 
 
     def __len__(self):

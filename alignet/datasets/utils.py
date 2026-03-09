@@ -11,6 +11,7 @@ import torchvision.transforms.functional as F
 from utils.transforms import STN
 from utils.registry import DATASET_REGISTRY
 
+from .base_dataset import percentile_minmax
 
 _SHARED_CACHE = {}
 
@@ -22,7 +23,7 @@ def build_shared_cache(file_paths, resample_fn):
         print(f"Loading {key}", flush=True)
         arr = resample_fn(p)                     # NumPy H×W×C
         t   = torch.from_numpy(arr).permute(2,0,1)  # C×H×W
-        t = (t - t.min()) / (t.max() - t.min())
+        t = percentile_minmax(t, 1, 99) #t = (t - t.min()) / (t.max() - t.min())
         t.share_memory_()                          # mark storage shared
         _SHARED_CACHE[key] = t
     print(f"All images from {file_paths} preloaded.", flush=True)
