@@ -63,6 +63,16 @@ class AligNetModel(pl.LightningModule):
                             param.requires_grad = False
                         else:
                             param.requires_grad = True
+                    self.model.encoder.eval()
+                elif freeze_policy == "encoder_parcial":
+                    print(f"[ALIGNetModel] Encoder is parcialy forzen.", flush=True)
+                    for name, param in self.model.named_parameters():
+                        param.requires_grad = False if "encoder" in name else True
+                    for block in self.model.encoder.layer[-2:]:
+                        for param in block.parameters():
+                            param.requires_grad = True
+                    for param in self.model.encoder.norm.parameters():
+                        param.requires_grad = True
             # default: "none", nothing is frozen
 
         if self.train_cfg:
@@ -148,7 +158,10 @@ class AligNetModel(pl.LightningModule):
             add_dataloader_idx=False
         )
 
-        return loss_reg
+        if dataloader_idx == 0:
+            self.log("val_loss", loss_reg, on_epoch=True, sync_dist=True)
+
+        # return loss_reg
 
 
     def test_step(self, batch, batch_idx, dataloader_idx=0):
