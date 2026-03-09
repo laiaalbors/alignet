@@ -51,6 +51,9 @@ if __name__ == "__main__":
     if seed:
         pl.seed_everything(seed, workers=True)
         print(f"\nSeed setted to {seed}.\n")
+    
+    # define image size if not defined
+    config["model"]["img_size"] = config["model"].get("img_size", 224)
 
     # --- preload MDAS datasets into shared memory if present ---
     for test_key, test_cfg in config["datasets"].items():
@@ -103,7 +106,10 @@ if __name__ == "__main__":
     model = model_class(config, val_names=test_names)
     print(model, flush=True)
 
+    ckpt = torch.load(config["test"]["checkpoint_path"], map_location="cpu")
+    model.load_state_dict(ckpt["state_dict"], strict=True)
     print(f"[TEST] Checkpoint in {config['test']['checkpoint_path']} loaded.")
+
     print(f"[TEST] Starting test...")
-    trainer.test(model, test_loaders, ckpt_path=config["test"]["checkpoint_path"])
+    trainer.test(model, test_loaders)
     

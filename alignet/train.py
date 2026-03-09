@@ -65,15 +65,19 @@ if __name__ == "__main__":
         pl.seed_everything(seed, workers=True)
         print(f"\nSeed setted to {seed}.\n")
 
-    # --- preload MDAS datasets into shared memory if present ---
-    if config["datasets"]["train"]["type"] in ("MDASDataset", "MDASCSVDataset"):
-        # make dummy instances to harvest paths + resample
-        train_ds = DATASET_REGISTRY.get(config["datasets"]["train"]["type"])(root_path=config["datasets"]["train"]["path"], img_size=config["model"]["img_size"], train=True, cfg=config["datasets"]["train"])
-        val_ds = DATASET_REGISTRY.get(config["datasets"]["validation_1"]["type"])(root_path=config["datasets"]["validation_1"]["path"], img_size=config["model"]["img_size"], train=True, cfg=config["datasets"]["validation_1"])
-        # fill shared memory
-        build_shared_cache(train_ds.file_paths, train_ds.resample_geotiff)
-        build_shared_cache(val_ds.  file_paths,   val_ds.resample_geotiff)
+    # define image size if not defined
+    config["model"]["img_size"] = config["model"].get("img_size", 224)
 
+    # --- preload MDAS datasets into shared memory if present ---
+    for key, train_cfg in config["datasets"].items():
+        if train_cfg["type"] in ("MDASDataset", "MDASCSVDataset"):
+            print(f'Preloading dataset {train_cfg["type"]}...', flush=True)
+            # make dummy instances to harvest paths + resample
+            train_ds = DATASET_REGISTRY.get(train_cfg["type"])(root_path=train_cfg["path"], img_size=config["model"]["img_size"], train=True, cfg=train_cfg)
+            # fill shared memory
+            build_shared_cache(train_ds.file_paths, train_ds.resample_geotiff)
+
+    # Create train dataloader
     train_loader = create_dataloader(
         config["datasets"]["train"],
         config["model"]["img_size"],
@@ -117,7 +121,7 @@ if __name__ == "__main__":
         filename="best-{epoch:02d}-{val_loss:.4f}",
         monitor=f"{val_names[0]}/loss",
         mode="min",
-        save_top_k=1,
+        save_top_k=3,
         save_on_train_epoch_end=True,
         save_weights_only=True,
     )
@@ -135,7 +139,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer(
         accelerator=config["trainer"]["accelerator"],
         devices=config["trainer"]["devices"],
-        strategy="ddp",
+        strategy="auto",
         precision=config["trainer"]["precision"],
         max_epochs=config["train"]["epochs"],
         logger=wandb_logger,
