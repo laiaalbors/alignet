@@ -32,14 +32,14 @@ Run the following commands to create the environment:
 ```bash
 conda create -n alignet python=3.10.18
 conda activate alignet
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+pip install torch torchvision --index-url https://download.pytorch.org/whl/cu130
 pip install .
 pip install albumentations qudida --no-deps
 ```
 
 ## Download Checkpoints
 
-To reproduce the results reported in the paper, you can download the pretrained ALIGNet checkpoints from the following Zenodo link: https://zenodo.org/records/17647715
+To reproduce the results reported in the paper, you can download the pretrained ALIGNet checkpoints from the following OSF link: https://osf.io/njqux/overview?view_only=70aabfea8c1f47a593386631698f94b5
 
 The archive contains 4 models:
 
