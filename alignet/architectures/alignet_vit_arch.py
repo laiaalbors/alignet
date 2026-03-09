@@ -3,11 +3,11 @@ from torch import nn
 import torch.nn.functional as F
 import torch
 
-from transformers import AutoImageProcessor, AutoModel
+from transformers import AutoModel
 from transformers.image_utils import load_image
 
-
 from utils.registry import ARCHITECTURE_REGISTRY
+
 
 # Examlpe de pretrained_encoder_path: facebook/dinov3-vitl16-pretrain-sat493m 
 @ARCHITECTURE_REGISTRY.register("AligNetViT")
@@ -23,12 +23,9 @@ class AligNetViT(nn.Module):
             embed_dim = 1024
 
         # pretrained encoder
-        self.processor = AutoImageProcessor.from_pretrained(pretrained_encoder_path)
-        self.encoder = AutoModel.from_pretrained(
-                pretrained_encoder_path, 
-                device_map="auto", 
-            )
-        self.num_patches = ((self.encoder.config.image_size // self.encoder.config.patch_size) ** 2) + self.encoder.config.num_register_tokens + 1
+        self.encoder = AutoModel.from_pretrained(pretrained_encoder_path, device_map="auto")
+
+        self.num_patches = ((self.encoder.config.image_size // self.encoder.config.patch_size) ** 2) + getattr(self.encoder.config, "num_register_tokens", 0) + 1
         if self.project_embed:
             # self.proj_embed = nn.Linear(self.encoder.config.hidden_size, embed_dim)
             self.proj_embed = nn.Sequential(
@@ -45,33 +42,25 @@ class AligNetViT(nn.Module):
 
         # mlp head
         self.head = nn.Sequential(
-            nn.Linear(self.num_patches*embed_dim, 2046),
+            nn.Linear(embed_dim, 256),
             nn.ReLU(),
-            nn.Linear(2046, num_transform_parameters)
+            nn.Linear(256, num_transform_parameters)
         )
 
     def decode_pair(self, x1_emb, x2_emb):
         out_forward = self.transformer_decoder(x1_emb, x2_emb)
         out_inverse = self.transformer_decoder(x2_emb, x1_emb)
-        B = x1_emb.size(0)
-        pred_forward = self.head(out_forward.view(B, -1))
-        pred_inverse = self.head(out_inverse.view(B, -1))
+        out_forward_cls = out_forward[:, 0]      # (B, D)
+        out_inverse_cls = out_inverse[:, 0]      # (B, D)
+        pred_forward = self.head(out_forward_cls)
+        pred_inverse = self.head(out_inverse_cls)
         return pred_forward, pred_inverse
-
-    def forward_encoder(self, x):
-        x = self.processor(images=x, return_tensors="pt", do_rescale=False)
-        x_emb = self.encoder(**x).last_hidden_state
-        if self.project_embed:
-            x_emb = self.proj_embed(x_emb)
-        return x_emb
 
     def forward(self, x1, x2):
         # x1 : [B, Image]
         # x2 : [B, Image]
-        x1 = self.processor(images=x1, return_tensors="pt", do_rescale=False)
-        x2 = self.processor(images=x2, return_tensors="pt", do_rescale=False)
-        x1_emb = self.encoder(**x1).last_hidden_state
-        x2_emb = self.encoder(**x2).last_hidden_state
+        x1_emb = self.encoder(x1.repeat(1, 3, 1, 1)).last_hidden_state
+        x2_emb = self.encoder(x2.repeat(1, 3, 1, 1)).last_hidden_state
         if self.project_embed:
             x1_emb = self.proj_embed(x1_emb)
             x2_emb = self.proj_embed(x2_emb)
