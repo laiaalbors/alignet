@@ -10,6 +10,7 @@ results/
 tb_logger_old/
 lightning_logs/
 logs/
+CLAUDE.md
 
 
 # JetBrains PyCharm IDE
