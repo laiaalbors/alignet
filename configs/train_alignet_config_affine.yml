@@ -10,21 +10,22 @@ datasets:
   train:
     type: ImageNetDataset
     path: files/train/imagenet_train_files.txt
-    rad_aug: True
     norm: min-max
     homography: affine    # affine / projective
     mode: mono
+    traditional_augmentation: false
+    sensor_like_augmentation: true
   validation_1:
-    name: val_imagenet_affine_random
-    type: ImageNetDataset
-    path: files/valid/imagenet_valid_files.txt 
+    name: val_imagenet_affine_csv
+    type: ImageNetCSVDataset
+    path: files/valid/imagenet_valid_affine.csv 
     norm: min-max
     homography: affine    # affine / projective
     mode: mono
   validation_2:
-    name: val_imagenet_affine_csv
-    type: ImageNetCSVDataset
-    path: files/valid/imagenet_valid_affine.csv 
+    name: val_imagenet_affine_random
+    type: ImageNetDataset
+    path: files/valid/imagenet_valid_files.txt 
     norm: min-max
     homography: affine    # affine / projective
     mode: mono
@@ -46,8 +47,8 @@ loss:
 train:
   num_workers: 3
   freeze_policy: encoder      # ~ / encoder / except_encoder / except_encoder_decoder
-  batch_size: 35
-  epochs: 20
+  batch_size: 70
+  epochs: 40
   lr: 0.0001
   momentum: 0.9
   scheduler: ExponentialLR    # ExponentialLR / WarmUp_ExponentialLR

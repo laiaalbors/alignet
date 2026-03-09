@@ -1,4 +1,4 @@
-name: "test_alignet_imagenet"
+name: "test_alignet_imagenet_sat"
 
 trainer:
   accelerator: cuda
@@ -8,16 +8,10 @@ trainer:
 
 datasets:
   test_1:
-    name: val_vedai_affine
-    type: VEDAICSVDataset
-    path: files/test/vedai_test_affine.csv
-    norm: min-max
-    homography: affine
-    mode: multi
-  test_2:
-    name: val_mdas_affine
-    type: MDASCSVDataset
-    path: files/test/mdas_test_affine.csv
+    name: val_dream_affine
+    type: DREAMCSVDataset
+    path: files/test/dream_test_affine.csv
+    data_path: /mnt/gpid08/datasets/registrat/DREAM_NPY/
     norm: min-max
     homography: affine
     mode: multi
@@ -25,16 +19,15 @@ datasets:
 model:
   model_name: AligNetModel
   architecture: AligNetViT
-  pretrained_encoder_path: "facebook/dinov3-vitl16-pretrain-sat493m"
-  img_size: 256
   input_channels: 1
   attention_heads: 4
   window_size: 16
+  embed_dim: 1024
   num_transform_parameters: 6
 
 test:
   num_workers: 3
-  checkpoint_path: "./checkpoints/affine_imagenet_best.ckpt"
+  checkpoint_path: "./checkpoints/affine_imagenet_sat_best.ckpt"    # "./checkpoints/affine_imagenet_sat_best.ckpt" / "./checkpoints/affine_imagenet_lvd_best.ckpt" / "./checkpoints/affine_imagenet_sat_trad_aug.ckpt" / "./checkpoints/affine_imagenet_sat_no_aug.ckpt"
 
   metrics:
     rmse:

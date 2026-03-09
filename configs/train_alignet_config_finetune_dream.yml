@@ -1,4 +1,4 @@
-name: "alignet_imagenet_affine_finetune_vedai"
+name: "alignet_imagenet_affine_finetune_dream"
 
 trainer:
   accelerator: cuda
@@ -8,29 +8,25 @@ trainer:
 
 datasets:
   train:
-    type: VEDAIDataset
-    path: files/train/vedai_train.txt 
+    type: DREAMDataset
+    path: files/train/dream_train_zones.txt
+    data_path: /mnt/gpid08/datasets/registrat/DREAM_NPY/
     norm: min-max
     homography: affine    # affine / projective
     mode: mono            # mono / multi
   validation_1:
-    name: val_vedai_random_mono
-    type: VEDAIDataset 
-    path: files/valid/vedai_val.txt
-    norm: min-max
-    homography: affine    # affine / projective
-    mode: mono            # mono / multi
-  validation_2:
-    name: val_vedai_csv_mono
-    type: VEDAICSVDataset
-    path: files/test/vedai_test_affine.csv 
+    name: val_dream_csv_mono
+    type: DREAMCSVDataset
+    path: files/test/dream_test_affine_easy.csv
+    data_path: /mnt/gpid08/datasets/registrat/DREAM_NPY/
     norm: min-max
     homography: affine    # affine / projective
     mode: mono            # mono / multi
   validation_3:
-    name: val_vedai_csv_multi
-    type: VEDAICSVDataset
-    path: files/test/vedai_test_affine.csv 
+    name: val_dream_csv_multi
+    type: DREAMCSVDataset
+    path: files/test/dream_test_affine_easy.csv
+    data_path: /mnt/gpid08/datasets/registrat/DREAM_NPY/
     norm: min-max
     homography: affine    # affine / projective
     mode: multi           # mono / multi
@@ -52,14 +48,14 @@ loss:
 train:
   num_workers: 3
   freeze_policy: encoder      # ~ / encoder / except_encoder / except_encoder_decoder
-  batch_size: 35
-  epochs: 20
+  batch_size: 70
+  epochs: 10
   lr: 0.0001
   momentum: 0.9
   scheduler: ExponentialLR    # ExponentialLR / WarmUp_ExponentialLR
   scheduler_gamma: 0.99999
   checkpoint_dir: "./experiments"
-  checkpoint_path: "checkpoints/affine_imagenet_best.ckpt"  # Put ~ when automatically continuing a training with last.ckpt
+  checkpoint_path: "checkpoints/affine_imagenet_sat_best.ckpt"  # Put ~ when automatically continuing a training with last.ckpt
   checkpoint_interval: 200
   val_interval: 0.2
   log_interval: 50

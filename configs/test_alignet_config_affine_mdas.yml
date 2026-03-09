@@ -1,4 +1,4 @@
-name: "test_alignet_imagenet_projective"
+name: "test_alignet_imagenet_sat"
 
 trainer:
   accelerator: cuda
@@ -8,33 +8,25 @@ trainer:
 
 datasets:
   test_1:
-    name: val_vedai_proj
-    type: VEDAICSVDataset
-    path: files/test/vedai_test_projective.csv
-    norm: min-max
-    homography: projective
-    mode: multi
-  test_2:
-    name: val_mdas_proj
+    name: val_mdas_affine
     type: MDASCSVDataset
-    path: files/test/mdas_test_projective.csv  
+    path: files/test/mdas_test_affine.csv
     norm: min-max
-    homography: projective
+    homography: affine
     mode: multi
 
 model:
   model_name: AligNetModel
   architecture: AligNetViT
-  pretrained_encoder_path: "facebook/dinov3-vitl16-pretrain-sat493m"
-  img_size: 256
   input_channels: 1
   attention_heads: 4
   window_size: 16
-  num_transform_parameters: 8
+  embed_dim: 1024
+  num_transform_parameters: 6
 
 test:
   num_workers: 3
-  checkpoint_path: "./checkpoints/projective_imagenet_best.ckpt"
+  checkpoint_path: "./checkpoints/affine_imagenet_sat_best.ckpt"    # "./checkpoints/affine_imagenet_sat_best.ckpt" / "./checkpoints/affine_imagenet_lvd_best.ckpt" / "./checkpoints/affine_imagenet_sat_trad_aug.ckpt" / "./checkpoints/affine_imagenet_sat_no_aug.ckpt"
 
   metrics:
     rmse:
