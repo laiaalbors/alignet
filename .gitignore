@@ -8,6 +8,8 @@ experiments/
 experiments_old/
 results/
 tb_logger_old/
+lightning_logs/
+logs/
 
 
 # JetBrains PyCharm IDE
