@@ -13,32 +13,32 @@ set -euo pipefail
 CMDS_FILE="${1:-test_commands_dream.txt}"
 # CMDS_FILE="${1:-test_commands_mdas.txt}"
 
-# Llegeix la línia corresponent (1-based)
+# Read the corresponding line (1-based index)
 cmd="$(sed -n "${SLURM_ARRAY_TASK_ID}p" "$CMDS_FILE" || true)"
 
-# Si és buida o comentari, surt
+# If the line is empty or a comment, exit early
 if [[ -z "${cmd//[[:space:]]/}" ]] || [[ "$cmd" =~ ^[[:space:]]*# ]]; then
-  echo "[$SLURM_ARRAY_TASK_ID] Línia buida o comentada; res a fer."
+  echo "[$SLURM_ARRAY_TASK_ID] Empty or commented line; nothing to do."
   exit 0
 fi
 
-# Extreu --name per renombrar la tasca (opcional però útil)
+# Extract --name to rename the job (optional but useful for monitoring)
 job_name="$(echo "$cmd" | sed -n 's/.*--name[= ]"\?\([^"[:space:]]*\)"?.*/\1/p')"
 if [[ -n "${job_name}" ]]; then
   scontrol update JobId="${SLURM_JOB_ID}" JobName="${job_name}" || true
 fi
 
-# Crea un script temporal per evitar problemes de quoting
+# Create a temporary script to avoid quoting issues
 tmp_script="$(mktemp)"
 cat > "${tmp_script}" <<'EOS'
 #!/usr/bin/env bash
 set -euo pipefail
 EOS
-# Afegeix el preàmbul i la comanda real
+# Append preamble and the actual command
 {
-  # Imprimeix metadata útil
-  echo 'echo "[JOB $SLURM_JOB_ID / TASK $SLURM_ARRAY_TASK_ID] Executant..."'
-  # Insereix la comanda tal qual (incloses cometes dobles)
+  # Print useful job metadata
+  echo 'echo "[JOB $SLURM_JOB_ID / TASK $SLURM_ARRAY_TASK_ID] Running..."'
+  # Insert the command as-is (preserving double quotes)
   printf "%s\n" "$cmd"
 } >> "${tmp_script}"
 

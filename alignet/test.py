@@ -1,14 +1,8 @@
-import pytorch_lightning as pl
-from pytorch_lightning.loggers import WandbLogger
-from pytorch_lightning.callbacks import ModelCheckpoint
-import wandb
 import torch
-from torch.utils.data import DataLoader
 import yaml
 import os
-import glob
 
-from pytorch_lightning.profilers import AdvancedProfiler
+import pytorch_lightning as pl
 from pytorch_lightning.callbacks import TQDMProgressBar
 
 import datasets

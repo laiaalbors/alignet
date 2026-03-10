@@ -11,7 +11,7 @@ datasets:
     name: val_dream_affine
     type: DREAMCSVDataset
     path: files/test/dream_test_affine.csv
-    data_path: /mnt/gpid08/datasets/registrat/DREAM_NPY/
+    data_path: data/DREAM_NPY/
     norm: min-max
     homography: affine
     mode: multi

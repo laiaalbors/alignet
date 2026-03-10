@@ -49,4 +49,7 @@ where = ["."]
 
 [tool.pytest.ini_options]
 addopts = "-v"
-testpaths = ["tests"]  # This specifies the directory to look for tests
+testpaths = ["tests"]
+markers = [
+    "evaluation: full evaluation pipeline tests (require GPU, checkpoint, and data files)",
+]

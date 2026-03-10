@@ -1,6 +1,5 @@
 print("Starting to load the packages...", flush=True)
 
-import wandb
 import torch
 import yaml
 import os
@@ -9,7 +8,6 @@ import glob
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
-from pytorch_lightning.profilers import AdvancedProfiler
 from pytorch_lightning.callbacks import TQDMProgressBar
 
 import datasets

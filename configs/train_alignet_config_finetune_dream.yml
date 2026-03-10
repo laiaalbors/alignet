@@ -10,7 +10,7 @@ datasets:
   train:
     type: DREAMDataset
     path: files/train/dream_train_zones.txt
-    data_path: /mnt/gpid08/datasets/registrat/DREAM_NPY/
+    data_path: data/DREAM_NPY/
     norm: min-max
     homography: affine    # affine / projective
     mode: mono            # mono / multi
@@ -18,7 +18,7 @@ datasets:
     name: val_dream_csv_mono
     type: DREAMCSVDataset
     path: files/test/dream_test_affine_easy.csv
-    data_path: /mnt/gpid08/datasets/registrat/DREAM_NPY/
+    data_path: data/DREAM_NPY/
     norm: min-max
     homography: affine    # affine / projective
     mode: mono            # mono / multi
@@ -26,7 +26,7 @@ datasets:
     name: val_dream_csv_multi
     type: DREAMCSVDataset
     path: files/test/dream_test_affine_easy.csv
-    data_path: /mnt/gpid08/datasets/registrat/DREAM_NPY/
+    data_path: data/DREAM_NPY/
     norm: min-max
     homography: affine    # affine / projective
     mode: multi           # mono / multi
