@@ -55,7 +55,7 @@ train:
   scheduler: ExponentialLR    # ExponentialLR / WarmUp_ExponentialLR
   scheduler_gamma: 0.99999
   checkpoint_dir: "./experiments"
-  checkpoint_path: "checkpoints/affine_imagenet_sat_best.ckpt"  # Put ~ when automatically continuing a training with last.ckpt
+  checkpoint_path: "./checkpoints/affine_imagenet_sat_sensoraug.ckpt"  # Put ~ when automatically continuing a training with last.ckpt
   checkpoint_interval: 200
   val_interval: 0.2
   log_interval: 50

@@ -11,6 +11,7 @@ datasets:
     name: val_mdas_affine
     type: MDASCSVDataset
     path: files/test/mdas_test_affine.csv
+    data_path: /mnt/gpid08/datasets/registrat/MDAS/validation/
     norm: min-max
     homography: affine
     mode: multi
@@ -26,7 +27,7 @@ model:
 
 test:
   num_workers: 3
-  checkpoint_path: "./checkpoints/affine_imagenet_sat_best.ckpt"    # "./checkpoints/affine_imagenet_sat_best.ckpt" / "./checkpoints/affine_imagenet_lvd_best.ckpt" / "./checkpoints/affine_imagenet_sat_trad_aug.ckpt" / "./checkpoints/affine_imagenet_sat_no_aug.ckpt"
+  checkpoint_path: "./checkpoints/affine_imagenet_sat_sensoraug.ckpt"    # "./checkpoints/affine_imagenet_sat_sensoraug.ckpt" / "./checkpoints/affine_imagenet_lvd_sensoraug.ckpt" / "./checkpoints/affine_imagenet_sat_traditionalaug.ckpt" / "./checkpoints/affine_imagenet_sat_noaug.ckpt"
 
   metrics:
     rmse:

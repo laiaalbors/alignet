@@ -1,3 +1,4 @@
+import os
 import random
 import itertools
 import numpy as np
@@ -85,8 +86,9 @@ class MDASCSVDataset(BaseDataset):
         print(f"self.label_to_idx: {self.label_to_idx}", flush=True)
 
         self.df = df
-        all_paths = set(df["image_path"].unique()) | set(df["image_path2"].unique())
-        self.file_paths = list(all_paths)
+        paths1 = {os.path.join(self.data_path, p) for p in df["image_path"].unique()}
+        paths2 = {os.path.join(self.data_path, p) for p in df["image_path2"].unique()}
+        self.file_paths = list(paths1 | paths2)
         print(f"Unique image_path: {len(df['image_path'].unique())}", flush=True)
         print(f"Unique image_path2: {len(df['image_path2'].unique())}", flush=True)
 
