@@ -13,6 +13,7 @@ from utils.utils import (
     adjust_affine_transformation,
     apply_normalized_affine_to_polygon,
     apply_random_homography,
+    random_homography,
 )
 
 
@@ -159,6 +160,45 @@ class BaseDataset(Dataset):
         return forward_matrix, inverse_matrix
 
     @staticmethod
+    def _build_affine_projective_matrices(image, angle, translate, scale, shear, max_displacement=40):
+        """Compute and apply a random projective (homography) transformation from an affine one.
+
+        Returns:
+            warped_image: Tensor (C, H, W)
+            forward_matrix: flat Tensor[8]
+            inverse_matrix: flat Tensor[8]
+        """
+        # Affine
+        inv_flat = F._get_inverse_affine_matrix(
+            center=(image.shape[2] / 2, image.shape[1] / 2),
+            angle=angle,
+            translate=translate,
+            scale=scale,
+            shear=[shear, shear],
+        )
+        inverse_matrix = torch.tensor(inv_flat, dtype=torch.float32)
+        inv_3x3 = torch.tensor([
+            [inverse_matrix[0], inverse_matrix[1], inverse_matrix[2]],
+            [inverse_matrix[3], inverse_matrix[4], inverse_matrix[5]],
+            [0.0, 0.0, 1.0],
+        ], dtype=torch.float32)
+        for_3x3 = torch.inverse(inv_3x3)
+        H_affine = for_3x3 / for_3x3[2, 2]
+        # Projective
+        H_projective = random_homography(image.shape[1], image.shape[2], max_displacement=max_displacement)
+        # Combination of both
+        H = torch.matmul(H_projective, H_affine)
+        warped, for_H = apply_random_homography(image, H)
+        for_H = for_H / for_H[2, 2]
+        forward_matrix = for_H.reshape(9)[:-1]
+        inv_H = torch.inverse(for_H)
+        inv_H = inv_H / inv_H[2, 2]
+        inverse_matrix = inv_H.reshape(9)[:-1]
+        assert not torch.isnan(forward_matrix).any(), "NaNs in forward_matrix!"
+        assert not torch.isnan(inverse_matrix).any(), "NaNs in inverse_matrix!"
+        return warped, forward_matrix, inverse_matrix
+
+    @staticmethod
     def _build_random_projective_matrices(image, max_displacement=80):
         """Apply a random projective (homography) transformation.
 
@@ -189,9 +229,9 @@ class BaseDataset(Dataset):
             forward_matrix: flat Tensor[8]
             inverse_matrix: flat Tensor[8]
         """
-        warped, forward_affine = apply_random_homography(image, H)
-        forward_matrix = forward_affine.reshape(9)[:-1]
-        inv_H = torch.inverse(forward_affine)
+        warped, forward_projective = apply_random_homography(image, H)
+        forward_matrix = forward_projective.reshape(9)[:-1]
+        inv_H = torch.inverse(forward_projective)
         inv_H = inv_H / inv_H[2, 2]
         inverse_matrix = inv_H.reshape(9)[:-1]
         assert not torch.isnan(forward_matrix).any(), "NaNs in forward_matrix!"

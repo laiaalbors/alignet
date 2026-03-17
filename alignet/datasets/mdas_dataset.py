@@ -116,6 +116,12 @@ class MDASDataset(BaseDataset):
 
         return image_r, image_s, label_r_idx, label_s_idx
 
+    # Affine parameter ranges for MDAS
+    _ANGLE_RANGE = (-35, 35)
+    _TRANSLATE_RANGE = (-20, 20)
+    _SCALE_RANGE = (0.8, 1.2)
+    _SHEAR_RANGE = (-10, 10)
+
     def __getitem__(self, index):
         image_r, image_s, label_r_idx, label_s_idx = self._load_image_pair(index)
 
@@ -130,15 +136,22 @@ class MDASDataset(BaseDataset):
         image_shape = image_r.shape  # (C, H, W)
 
         if self.homography == "affine":
-            angle = random.uniform(-35, 35)
-            translate = (random.uniform(-20, 20), random.uniform(-20, 20))
-            scale = random.uniform(0.8, 1.2)
-            shear = random.uniform(-10, 10)
+            angle = random.uniform(*self._ANGLE_RANGE)
+            translate = (random.uniform(*self._TRANSLATE_RANGE), random.uniform(*self._TRANSLATE_RANGE))
+            scale = random.uniform(*self._SCALE_RANGE)
+            shear = random.uniform(*self._SHEAR_RANGE)
             transformed_image_s = F.affine(image_s, angle, translate, scale, [shear, shear])
             forward_matrix, inverse_matrix = self._build_affine_matrices(image_s, angle, translate, scale, shear)
 
         elif self.homography == "projective":
             transformed_image_s, forward_matrix, inverse_matrix = self._build_random_projective_matrices(image_s)
+
+        elif self.homography == "affine_projective":
+            angle = random.uniform(*self._ANGLE_RANGE)
+            translate = (random.uniform(*self._TRANSLATE_RANGE), random.uniform(*self._TRANSLATE_RANGE))
+            scale = random.uniform(*self._SCALE_RANGE)
+            shear = random.uniform(*self._SHEAR_RANGE)
+            transformed_image_s, forward_matrix, inverse_matrix = self._build_affine_projective_matrices(image_s, angle, translate, scale, shear)
 
         label_r = torch.tensor(label_r_idx, dtype=torch.long)
         label_s = torch.tensor(label_s_idx, dtype=torch.long)

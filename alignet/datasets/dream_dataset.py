@@ -82,6 +82,12 @@ class DREAMDataset(BaseDataset):
             return self.transforms_percentile(image)
         return self.transforms(image)
 
+    # Affine parameter ranges for MDAS
+    _ANGLE_RANGE = (-35, 35)
+    _TRANSLATE_RANGE = (-20, 20)
+    _SCALE_RANGE = (0.8, 1.2)
+    _SHEAR_RANGE = (-10, 10)
+
     def __getitem__(self, index):
         if self.mode == "mono":
             path_1 = path_2 = self.file_paths[index]
@@ -101,15 +107,22 @@ class DREAMDataset(BaseDataset):
         label_2 = torch.tensor(label_2_idx, dtype=torch.long)
 
         if self.homography == "affine":
-            angle = random.uniform(-35, 35)
-            translate = (random.uniform(-20, 20), random.uniform(-20, 20))
-            scale = random.uniform(0.8, 1.2)
-            shear = random.uniform(-10, 10)
+            angle = random.uniform(*self._ANGLE_RANGE)
+            translate = (random.uniform(*self._TRANSLATE_RANGE), random.uniform(*self._TRANSLATE_RANGE))
+            scale = random.uniform(*self._SCALE_RANGE)
+            shear = random.uniform(*self._SHEAR_RANGE)
             transformed_image_2 = F.affine(image_2, angle, translate, scale, [shear, shear])
             forward_matrix, inverse_matrix = self._build_affine_matrices(image_2, angle, translate, scale, shear)
 
         elif self.homography == "projective":
             transformed_image_2, forward_matrix, inverse_matrix = self._build_random_projective_matrices(image_2)
+
+        elif self.homography == "affine_projective":
+            angle = random.uniform(*self._ANGLE_RANGE)
+            translate = (random.uniform(*self._TRANSLATE_RANGE), random.uniform(*self._TRANSLATE_RANGE))
+            scale = random.uniform(*self._SCALE_RANGE)
+            shear = random.uniform(*self._SHEAR_RANGE)
+            transformed_image_2, forward_matrix, inverse_matrix = self._build_affine_projective_matrices(image_2, angle, translate, scale, shear)
 
         image_1_crop, transformed_image_2_crop, inv_norm, fwd_norm, mask1, mask2 = self._crop_and_finalize(
             image_1, transformed_image_2, forward_matrix, inverse_matrix, image_shape

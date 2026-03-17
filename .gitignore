@@ -5,9 +5,8 @@ processed/
 wandb/
 tb_logger/
 experiments/
-experiments_old/
 results/
-tb_logger_old/
+checkpoints/
 lightning_logs/
 logs/
 CLAUDE.md

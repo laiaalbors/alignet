@@ -52,6 +52,13 @@ class ImageNetDataset(BaseDataset):
         elif self.homography == "projective":
             image2, forward_matrix, inverse_matrix = self._build_random_projective_matrices(image)
 
+        elif self.homography == "affine_projective":
+            angle = random.uniform(*self._ANGLE_RANGE)
+            translate = (random.uniform(*self._TRANSLATE_RANGE), random.uniform(*self._TRANSLATE_RANGE))
+            scale = random.uniform(*self._SCALE_RANGE)
+            shear = random.uniform(*self._SHEAR_RANGE)
+            image2, forward_matrix, inverse_matrix = self._build_affine_projective_matrices(image, angle, translate, scale, shear)
+
         # Augmentation applied independently to each image (simulates different sensors)
         image1 = self._apply_augmentation(image)
         image2 = self._apply_augmentation(image2)
