@@ -16,7 +16,7 @@ class ImageNetDataset(BaseDataset):
         super().__init__(cfg=cfg, train=train, img_size=img_size)
 
         with open(root_path, "r") as f:
-            self.file_paths = [line.strip() for line in f]
+            self.file_paths = [os.path.join(self.data_path, line.strip()) for line in f]
 
         self.img_size = img_size
         self.labels = [0]  # placeholder

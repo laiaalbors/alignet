@@ -44,6 +44,7 @@ class BaseDataset(Dataset):
         self.homography = cfg.get("homography", "affine")
         self.use_traditional_aug = cfg.get("traditional_augmentation", False)
         self.use_sensor_like_aug = cfg.get("sensor_like_augmentation", False)
+        self.data_path = cfg.get("data_path", None)
 
         # Sensor-like augmentation object (the novel contribution)
         self.sensor_like_augmentation = sensor_like_augmentation

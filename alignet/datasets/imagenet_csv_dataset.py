@@ -25,7 +25,7 @@ class ImageNetCSVDataset(BaseDataset):
     def __getitem__(self, index):
         row = self.df.iloc[index]
 
-        with Image.open(row["image_path"]) as image_pil:
+        with Image.open(os.path.join(self.data_path, row["image_path"])) as image_pil:
             image_pil = image_pil.convert("RGB" if self.train else "L")
             image = self.transforms(image_pil)
 

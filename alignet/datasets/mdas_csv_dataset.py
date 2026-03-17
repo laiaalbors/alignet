@@ -35,7 +35,6 @@ class MDASCSVDataset(BaseDataset):
         from datasets.utils import PairedRandomCrop, PairedCenterCrop
         self.paired_crop = PairedRandomCrop(self.img_size, contained=True)
 
-        self.data_path = cfg["data_path"]
         self.label_to_idx = {
             "EeteS_EnMAP_10m": 0, "EeteS_EnMAP_30m": 1, "Sentinel-1": 2,
             "3K_DSM": 3, "3K_RGB": 4, "EeteS_Sentinel_2_10m": 5, "HySpex": 6, "Sentinel-2": 7,

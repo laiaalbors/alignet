@@ -18,7 +18,6 @@ class DREAMCSVDataset(BaseDataset):
         if cfg is None or "mode" not in cfg:
             print("[WARNING] Mode not specified in cfg. Defaulting to 'mono'.", flush=True)
 
-        self.data_path = cfg["data_path"]
         self.img_size = img_size
         self.label_to_idx = {"optique": 0, "radar": 1, "S1": 2, "S2": 3, "SRTM": 4}
         self._sar_idx = self.label_to_idx["S1"]

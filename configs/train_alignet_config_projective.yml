@@ -10,6 +10,7 @@ datasets:
   train:
     type: ImageNetDataset
     path: files/train/imagenet_train_files.txt
+    data_path: data/ImageNet/
     norm: min-max
     homography: projective    # affine / projective
     mode: mono
@@ -19,6 +20,7 @@ datasets:
     name: val_imagenet_proj_csv
     type: ImageNetCSVDataset
     path: files/valid/imagenet_valid_projective.csv 
+    data_path: data/ImageNet/
     norm: min-max
     homography: projective    # affine / projective
     mode: mono
@@ -26,6 +28,7 @@ datasets:
     name: val_imagenet_proj_random
     type: ImageNetDataset
     path: files/valid/imagenet_valid_files.txt 
+    data_path: data/ImageNet/
     norm: min-max
     homography: projective    # affine / projective
     mode: mono
