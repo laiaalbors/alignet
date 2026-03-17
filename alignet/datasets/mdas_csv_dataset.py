@@ -122,8 +122,9 @@ class MDASCSVDataset(BaseDataset):
 
         offset1 = row["offset1"]
         offset2 = row["offset2"]
-        h = row["h"]
-        w = row["w"]
+        # h = row["h"]
+        # w = row["w"]
+        h, w = self.img_size, self.img_size
 
         image_r = self._cache[str(file_path_r)]
         if not isinstance(image_r, torch.Tensor):

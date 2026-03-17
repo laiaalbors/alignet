@@ -20,7 +20,7 @@ def apply_random_homography(image, H=None, max_displacement=40):
     warped = kornia.geometry.transform.warp_perspective(
         image, H, dsize=(Ht, Wt), align_corners=True
     )
-    return warped.squeeze(), H.squeeze()
+    return warped.squeeze(0), H.squeeze()
 
 
 def random_homography(height, width, max_displacement=10):

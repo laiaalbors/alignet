@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 from PIL import Image
@@ -44,7 +45,7 @@ class ImageNetCSVDataset(BaseDataset):
             cols = ["h00", "h01", "h02", "h10", "h11", "h12", "h20", "h21"]
             H = torch.tensor(self.df.loc[index, cols].tolist() + [1.0], dtype=torch.float32).reshape(3, 3)
             image2, forward_matrix, inverse_matrix = self._build_projective_matrices_from_H(image, H)
-
+        
         image1 = self._apply_augmentation(image)
         image2 = self._apply_augmentation(image2)
 
