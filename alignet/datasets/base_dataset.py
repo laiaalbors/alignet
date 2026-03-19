@@ -40,7 +40,7 @@ class BaseDataset(Dataset):
         # --- Common config attributes ---
         cfg = cfg or {}
         if "mode" not in cfg:
-            pass  # subclasses may warn about this if relevant
+            print("[WARNING] Mode not specified in cfg. Defaulting to 'mono'.", flush=True)
         self.mode = cfg.get("mode", "mono")
         self.homography = cfg.get("homography", "affine")
         self.use_traditional_aug = cfg.get("traditional_augmentation", False)

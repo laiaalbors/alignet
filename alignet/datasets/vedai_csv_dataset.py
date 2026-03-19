@@ -15,11 +15,6 @@ class VEDAICSVDataset(BaseDataset):
     def __init__(self, root_path, img_size, train=True, cfg=None):
         super().__init__(cfg=cfg, train=train, img_size=img_size)
 
-        if cfg is None or "mode" not in cfg:
-            print("[WARNING] Mode not specified in cfg. Defaulting to 'multi'.", flush=True)
-        # VEDAICSVDataset defaults to 'multi' (override base class which defaults to 'mono')
-        self.mode = (cfg or {}).get("mode", "multi")
-
         self.label_to_idx = {"ir": 0, "co": 1}
         self.df = pd.read_csv(root_path)
         self.img_size = img_size

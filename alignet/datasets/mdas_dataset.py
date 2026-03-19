@@ -25,9 +25,6 @@ class MDASDataset(BaseDataset):
         self.img_size = img_size
         self._cache = get_shared_cache()
 
-        if cfg is None or "mode" not in cfg:
-            print("[WARNING] Mode not specified in cfg. Defaulting to 'mono'.", flush=True)
-
         # MDAS always uses random crop (no center crop for validation — images are large enough)
         self.paired_crop = PairedRandomCrop(self.img_size, contained=True)
 
