@@ -12,10 +12,19 @@ from utils.registry import ARCHITECTURE_REGISTRY
 # Examlpe de pretrained_encoder_path: facebook/dinov3-vitl16-pretrain-sat493m 
 @ARCHITECTURE_REGISTRY.register("AligNetViT")
 class AligNetViT(nn.Module):
-    def __init__(self, input_dim, num_heads, window_size, img_size, num_transform_parameters, pretrained_encoder_path, project_embed=False, embed_dim=None):
+    def __init__(self, cfg):
         super().__init__()
-        self.window_size = window_size
-        self.project_embed = project_embed
+        self.model_cfg = cfg
+
+        input_dim=self.model_cfg["input_channels"]
+        num_heads=self.model_cfg.get("attention_heads", 4)
+        self.window_size=self.model_cfg.get("window_size", 16)
+        img_size=self.model_cfg["img_size"]
+        num_transform_parameters=self.model_cfg["num_transform_parameters"]
+        pretrained_encoder_path=self.model_cfg.get("pretrained_encoder_path", "facebook/dinov3-vitl16-pretrain-sat493m")
+        self.project_embed=self.model_cfg.get("project_embed", False)
+        embed_dim=self.model_cfg.get("embed_dim", None)
+        self.use_lora=self.model_cfg.get("use_lora", False)
         self.num_patches = None
 
         if project_embed and embed_dim is None:
