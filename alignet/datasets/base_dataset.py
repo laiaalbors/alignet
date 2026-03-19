@@ -186,6 +186,8 @@ class BaseDataset(Dataset):
         H_affine = for_3x3 / for_3x3[2, 2]
         # Projective
         H_projective = random_homography(image.shape[1], image.shape[2], max_displacement=max_displacement)
+        while torch.isnan(H_projective).any():
+            H_projective = random_homography(image.shape[1], image.shape[2], max_displacement=max_displacement)
         # Combination of both
         H = torch.matmul(H_projective, H_affine)
         warped, for_H = apply_random_homography(image, H)
@@ -294,7 +296,7 @@ class BaseDataset(Dataset):
 
         mask1, mask2 = create_masks(
             offset1, offset2, h, w,
-            (image_depth, image_height, image_width),
+            (1, image_height, image_width),
             inverse_matrix_norm, forward_matrix_norm,
             inverse_matrix_crop_norm, forward_matrix_crop_norm,
             contained,
