@@ -29,7 +29,10 @@ class AligNetModel(pl.LightningModule):
             # "except_encoder" --> All frozen except encoder
             # "except_encoder_decoder" --> All frozen except encoder and decoder
             if freeze_policy:
-                if freeze_policy == "all":
+                if self.model_cfg.get("use_lora", False) and freeze_policy in ('all', 'encoder', 'encoder_parcial'):
+                    print(f"[WARNING] When `use_lora=True`, `freeze_policy`cannot freeze the encoder, LoRA handles it automatically. Changing it to None.")
+                    freeze_policy = None
+                elif freeze_policy == "all":
                     print(f"[ALIGNetModel] All layers are forzen.", flush=True)
                     for name, param in self.model.named_parameters():
                         param.requires_grad = False

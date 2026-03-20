@@ -6,6 +6,8 @@ import torch
 from transformers import AutoModel
 from transformers.image_utils import load_image
 
+from peft import LoraConfig, get_peft_model
+
 from utils.registry import ARCHITECTURE_REGISTRY
 
 
@@ -27,12 +29,25 @@ class AligNetViT(nn.Module):
         self.use_lora=self.model_cfg.get("use_lora", False)
         self.num_patches = None
 
-        if project_embed and embed_dim is None:
-            print(f"[Warning] 'project_embed' is True but 'embed_dim' is not defined. Using 'embed_dim=1024' by default.")
+        if self.project_embed and embed_dim is None:
+            print(f"[WARNING] 'project_embed' is True but 'embed_dim' is not defined. Using 'embed_dim=1024' by default.")
             embed_dim = 1024
 
         # pretrained encoder
-        self.encoder = AutoModel.from_pretrained(pretrained_encoder_path, device_map="auto")
+        self.encoder = AutoModel.from_pretrained(pretrained_encoder_path) #, device_map="auto"
+        if self.use_lora:
+            peft_config = LoraConfig(
+                r=self.model_cfg.get("lora_r", 8), 
+                lora_alpha=self.model_cfg.get("lora_alpha", 32), 
+                lora_dropout=self.model_cfg.get("lora_dropout", 0.05), 
+                target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "up_proj", "down_proj"],
+                task_type=None, 
+                bias="none",
+                inference_mode=False, 
+            )
+            self.encoder = get_peft_model(self.encoder, peft_config)
+            self.encoder.gradient_checkpointing_enable()
+            self.encoder.print_trainable_parameters()
 
         self.num_patches = ((self.encoder.config.image_size // self.encoder.config.patch_size) ** 2) + getattr(self.encoder.config, "num_register_tokens", 0) + 1
         if self.project_embed:
@@ -68,8 +83,10 @@ class AligNetViT(nn.Module):
     def forward(self, x1, x2):
         # x1 : [B, Image]
         # x2 : [B, Image]
-        x1_emb = self.encoder(x1.repeat(1, 3, 1, 1)).last_hidden_state
-        x2_emb = self.encoder(x2.repeat(1, 3, 1, 1)).last_hidden_state
+        x1 = x1.repeat(1, 3, 1, 1).to(self.encoder.device)
+        x2 = x2.repeat(1, 3, 1, 1).to(self.encoder.device)
+        x1_emb = self.encoder(x1).last_hidden_state
+        x2_emb = self.encoder(x2).last_hidden_state
         if self.project_embed:
             x1_emb = self.proj_embed(x1_emb)
             x2_emb = self.proj_embed(x2_emb)

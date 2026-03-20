@@ -22,7 +22,8 @@ dependencies = [
     "transformers==4.56.2",
     "accelerate==1.10.1",
     "kornia==0.8.1",
-    "timm==1.0.20"
+    "timm==1.0.20",
+    "peft==0.18.1",
 ]
 
 [project.optional-dependencies]
