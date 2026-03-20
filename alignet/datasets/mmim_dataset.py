@@ -11,8 +11,8 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 import torchvision.transforms.functional as F
 
-from data.base_dataset import BaseDataset
-from data.utils import PairedRandomCrop, PairedCenterCrop, get_shared_cache
+from datasets.base_dataset import BaseDataset
+from datasets.utils import PairedRandomCrop, PairedCenterCrop, get_shared_cache
 from utils.utils import normalize_affine_matrix, create_masks, adjust_affine_transformation, apply_normalized_affine_to_polygon
 from utils.registry import DATASET_REGISTRY
 
