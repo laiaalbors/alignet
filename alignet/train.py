@@ -63,55 +63,19 @@ if __name__ == "__main__":
         pl.seed_everything(seed, workers=True)
         print(f"\nSeed setted to {seed}.\n")
 
-    # define image size if not defined
-    config["model"]["img_size"] = config["model"].get("img_size", 224)
-
-    # --- preload MDAS datasets into shared memory if present ---
-    for key, train_cfg in config["datasets"].items():
-        if train_cfg["type"] in ("MDASDataset", "MDASCSVDataset"):
-            print(f'Preloading dataset {train_cfg["type"]}...', flush=True)
-            # make dummy instances to harvest paths + resample
-            train_ds = DATASET_REGISTRY.get(train_cfg["type"])(root_path=train_cfg["path"], img_size=config["model"]["img_size"], train=True, cfg=train_cfg)
-            # fill shared memory
-            build_shared_cache(train_ds.file_paths, train_ds.resample_geotiff)
-
-    # Create train dataloader
-    train_loader = create_dataloader(
-        config["datasets"]["train"],
-        config["model"]["img_size"],
-        config["train"]["batch_size"],
-        config["train"]["num_workers"]
-    )
-    print(f"[DATA] Train data loader created with {len(train_loader.dataset)} samples.", flush=True)
-
-    # Create validation dataloaders
-    val_loaders = []
-    val_names = []
-    for key, val_cfg in config["datasets"].items():
-        if key.startswith("validation_"):
-            val_loader = create_dataloader(
-                val_cfg,
-                config["model"]["img_size"],
-                config["train"]["batch_size"]*2,
-                config["train"]["num_workers"],
-                train=False
-            )
-            val_loaders.append(val_loader)
-            val_names.append(val_cfg["name"])
-
-    lengths_val = [len(dl.dataset) for dl in val_loaders]
-    print(f"[DATA] {len(val_names)} validation data loader/s created with {lengths_val} samples.\n", flush=True)
-
+    # Define wand logger
     wandb_logger = WandbLogger(
         project=config["wandb"]["project"],
         name=config["name"],
         id=config["wandb"].get("resume_id", None),
         resume="allow"
     )
+    
+    # Define image size if not defined
+    config["model"]["img_size"] = config["model"].get("img_size", 224)
 
-    model_class = MODEL_REGISTRY.get(config["model"]["model_name"])
-    model = model_class(config, val_names=val_names)
-    print(model, flush=True)
+    # Obtain val_names
+    val_names = [cfg["name"] for key, cfg in config["datasets"].items() if key.startswith("validation_")]
 
     # 1) Best‐val model at end of epoch  
     val_ckpt = ModelCheckpoint(
@@ -137,7 +101,7 @@ if __name__ == "__main__":
     trainer = pl.Trainer(
         accelerator=config["trainer"]["accelerator"],
         devices=config["trainer"]["devices"],
-        strategy="auto",
+        strategy="ddp",
         precision=config["trainer"]["precision"],
         max_epochs=config["train"]["epochs"],
         logger=wandb_logger,
@@ -147,6 +111,49 @@ if __name__ == "__main__":
         enable_progress_bar=True,
         # strategy="ddp_find_unused_parameters_true",
     )
+
+    # --- preload MDAS datasets into shared memory if present ---
+    for key, train_cfg in config["datasets"].items():
+        if train_cfg["type"] in ("MDASDataset", "MDASCSVDataset"):
+            print(f'Preloading dataset {train_cfg["type"]}...', flush=True)
+            # make dummy instances to harvest paths + resample
+            train_ds = DATASET_REGISTRY.get(train_cfg["type"])(root_path=train_cfg["path"], img_size=config["model"]["img_size"], train=True, cfg=train_cfg)
+            # fill shared memory
+            build_shared_cache(train_ds.file_paths, train_ds.resample_geotiff)
+
+    print(f"[RANK {trainer.global_rank}] Waiting for shared cache synchronization...", flush=True)
+    trainer.strategy.barrier() 
+    print(f"[RANK {trainer.global_rank}] Cache ready, starting training.", flush=True)
+
+    # Create train dataloader
+    train_loader = create_dataloader(
+        config["datasets"]["train"],
+        config["model"]["img_size"],
+        config["train"]["batch_size"],
+        config["train"]["num_workers"]
+    )
+    print(f"[DATA] Train data loader created with {len(train_loader.dataset)} samples.", flush=True)
+
+    # Create validation dataloaders
+    val_loaders = []
+    for key, val_cfg in config["datasets"].items():
+        if key.startswith("validation_"):
+            val_loader = create_dataloader(
+                val_cfg,
+                config["model"]["img_size"],
+                config["train"]["batch_size"]*2,
+                config["train"]["num_workers"],
+                train=False
+            )
+            val_loaders.append(val_loader)
+
+    lengths_val = [len(dl.dataset) for dl in val_loaders]
+    print(f"[DATA] {len(val_names)} validation data loader/s created with {lengths_val} samples.\n", flush=True)
+
+    # Create model
+    model_class = MODEL_REGISTRY.get(config["model"]["model_name"])
+    model = model_class(config, val_names=val_names)
+    print(model, flush=True)
 
     if config["train"]["checkpoint_path"]:
         print(f"[TRAIN] Loading weights from {config['train']['checkpoint_path']}...", flush=True)
