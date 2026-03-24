@@ -63,9 +63,13 @@ def inverse_affine_matrix(affine_matrix_input, device):
     
     try:
         affine_matrix_inverse = torch.linalg.inv(affine_matrix)
+        affine_matrix_inverse = affine_matrix_inverse / affine_matrix_inverse[:,2,2].unsqueeze(1).unsqueeze(2)
     except:
         print(f"\n[inverse_affine_matrix] matrix not invertible, returning identity. batchsize={b}", flush=True)
-        return torch.eye(2,3, device=device).reshape(1,6).repeat(b, 1)
+        if affine_matrix_input.shape[-1] == 6:
+            return torch.eye(2,3, device=device).reshape(1,6).repeat(b, 1)
+        elif affine_matrix_input.shape[-1] == 8:
+            return torch.eye(3,3, device=device).view(1, 9).squeeze()[:-1].reshape(1,8).repeat(b, 1)
     
     if affine_matrix_input.shape[-1] == 6:
         return affine_matrix_inverse[:, :2, :].reshape(b, 6)
