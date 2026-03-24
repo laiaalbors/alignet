@@ -25,13 +25,13 @@ class AligNetViT(nn.Module):
         num_transform_parameters=self.model_cfg["num_transform_parameters"]
         pretrained_encoder_path=self.model_cfg.get("pretrained_encoder_path", "facebook/dinov3-vitl16-pretrain-sat493m")
         self.project_embed=self.model_cfg.get("project_embed", False)
-        embed_dim=self.model_cfg.get("embed_dim", None)
+        self.embed_dim=self.model_cfg.get("embed_dim", None)
         self.use_lora=self.model_cfg.get("use_lora", False)
         self.num_patches = None
 
-        if self.project_embed and embed_dim is None:
-            print(f"[WARNING] 'project_embed' is True but 'embed_dim' is not defined. Using 'embed_dim=1024' by default.")
-            embed_dim = 1024
+        if self.project_embed and self.embed_dim is None:
+            print(f"[WARNING] 'project_embed' is True but 'embed_dim' is not defined. Using 'embed_dim={self.encoder.config.hidden_size}' by default.")
+            self.embed_dim = self.encoder.config.hidden_size
 
         # pretrained encoder
         self.encoder = AutoModel.from_pretrained(pretrained_encoder_path) #, device_map="auto"
@@ -51,22 +51,20 @@ class AligNetViT(nn.Module):
 
         self.num_patches = ((self.encoder.config.image_size // self.encoder.config.patch_size) ** 2) + getattr(self.encoder.config, "num_register_tokens", 0) + 1
         if self.project_embed:
-            # self.proj_embed = nn.Linear(self.encoder.config.hidden_size, embed_dim)
+            # self.proj_embed = nn.Linear(self.encoder.config.hidden_size, self.embed_dim)
             self.proj_embed = nn.Sequential(
                 nn.Linear(self.encoder.config.hidden_size, self.encoder.config.hidden_size*2),
                 nn.ReLU(),
-                nn.Linear(self.encoder.config.hidden_size*2, embed_dim)
+                nn.Linear(self.encoder.config.hidden_size*2, self.embed_dim)
             )
-        else:
-            embed_dim = self.encoder.config.hidden_size
         
         # decoder
-        decoder_layer = nn.TransformerDecoderLayer(d_model=embed_dim, nhead=num_heads, norm_first=True, batch_first=True)
+        decoder_layer = nn.TransformerDecoderLayer(d_model=self.embed_dim, nhead=num_heads, norm_first=True, batch_first=True)
         self.transformer_decoder = nn.TransformerDecoder(decoder_layer, num_layers=6)
 
         # mlp head
         self.head = nn.Sequential(
-            nn.Linear(embed_dim, 256),
+            nn.Linear(self.embed_dim, 256),
             nn.ReLU(),
             nn.Linear(256, num_transform_parameters)
         )
