@@ -21,17 +21,13 @@ class AligNetViT(nn.Module):
         input_dim=self.model_cfg["input_channels"]
         num_heads=self.model_cfg.get("attention_heads", 4)
         self.window_size=self.model_cfg.get("window_size", 16)
-        img_size=self.model_cfg["img_size"]
+        self.img_size=self.model_cfg["img_size"]
         num_transform_parameters=self.model_cfg["num_transform_parameters"]
         pretrained_encoder_path=self.model_cfg.get("pretrained_encoder_path", "facebook/dinov3-vitl16-pretrain-sat493m")
         self.project_embed=self.model_cfg.get("project_embed", False)
         self.embed_dim=self.model_cfg.get("embed_dim", None)
         self.use_lora=self.model_cfg.get("use_lora", False)
         self.num_patches = None
-
-        if self.project_embed and self.embed_dim is None:
-            print(f"[WARNING] 'project_embed' is True but 'embed_dim' is not defined. Using 'embed_dim={self.encoder.config.hidden_size}' by default.")
-            self.embed_dim = self.encoder.config.hidden_size
 
         # pretrained encoder
         self.encoder = AutoModel.from_pretrained(pretrained_encoder_path) #, device_map="auto"
@@ -48,6 +44,14 @@ class AligNetViT(nn.Module):
             self.encoder = get_peft_model(self.encoder, peft_config)
             self.encoder.gradient_checkpointing_enable()
             self.encoder.print_trainable_parameters()
+
+        if self.embed_dim is None:
+            if self.project_embed:
+                print(f"[WARNING] 'project_embed' is True but 'embed_dim' is not defined. Using 'embed_dim=encoder.config.hidden_size' by default.")
+            self.embed_dim = getattr(self.encoder.config, "hidden_size", None)
+
+        if self.embed_dim is None:
+            raise ValueError("Could not determine 'embed_dim' from encoder config, and none was provided in cfg. Please set 'embed_dim' manually.")
 
         self.num_patches = ((self.encoder.config.image_size // self.encoder.config.patch_size) ** 2) + getattr(self.encoder.config, "num_register_tokens", 0) + 1
         if self.project_embed:
