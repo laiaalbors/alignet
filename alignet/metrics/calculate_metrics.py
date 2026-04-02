@@ -34,7 +34,9 @@ def calculate_metrics(img_r, img_s, forward_tp_gt, inverse_tp_gt, forward_tp_pre
         raise ValueError(f"Number of transformation parameters not recognized, expected 6 or 8, got {forward_tp_gt.shape[-1]}")
 
     for name, options in cfg['metrics'].items():
-        if name not in metric_results:
+        if name == "auc":
+            metric_results[name] = []
+        elif name not in metric_results:
             metric_results[name] = 0
         
         if name in ('rmse', 'mpd', 'iou'):
@@ -46,5 +48,15 @@ def calculate_metrics(img_r, img_s, forward_tp_gt, inverse_tp_gt, forward_tp_pre
         elif name in ('mi', 're'):
             metric_results[name] += METRIC_REGISTRY.get(options['type'])(img_r*mask_r, img_r_registered)
             metric_results[name] += METRIC_REGISTRY.get(options['type'])(img_s*mask_s, img_s_registered)
+        elif name == 'auc':
+            metric_results[name].append(METRIC_REGISTRY.get('calculate_mpd')(bbox_r, bbox_r_registered))
+            metric_results[name].append(METRIC_REGISTRY.get('calculate_mpd')(bbox_s, bbox_s_registered))
 
     return metric_results
+
+
+def auc_corner_error(errors, max_threshold):
+    xs = np.linspace(0, max_threshold, 1000)
+    ys = [(errors < x).mean() for x in xs]
+    auc = np.trapz(ys, xs) / max_threshold
+    return auc * 100

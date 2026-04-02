@@ -2,7 +2,7 @@ import torch.nn.functional as F
 import pytorch_lightning as pl
 import torch
 
-from metrics.calculate_metrics import calculate_metrics
+from metrics.calculate_metrics import calculate_metrics, auc_corner_error
 from utils.registry import MODEL_REGISTRY, ARCHITECTURE_REGISTRY, LOSS_REGISTRY
 
 @MODEL_REGISTRY.register("AligNetModel")
@@ -173,8 +173,15 @@ class AligNetModel(pl.LightningModule):
             print(f"\nTest results for dataset: {test_name}:")
             num_samples = len(test_dataloaders[idx].dataset)
             for metric, value in self.metric_results[test_name].items():
-                avg_value = value / (num_samples*2)     # x2 because we compute the metrics in both directions
-                print(f"    * {metric}:    {avg_value:.5f}")
+                if metric == "auc":
+                    auc3  = auc_corner_error(value, 3)
+                    auc5  = auc_corner_error(value, 5)
+                    auc10  = auc_corner_error(value, 10)
+                    auc20  = auc_corner_error(value, 20)
+                    print(f"    * AUC:    @3={auc3:.5f} - @5={auc5:.5f} - @10={auc10:.5f} - @20={auc20:.5f}")
+                else:
+                    avg_value = value / (num_samples*2)     # x2 because we compute the metrics in both directions
+                    print(f"    * {metric}:    {avg_value:.5f}")
                 
         self.metric_results = {name: {} for name in self.test_cfg['metrics'].keys()}
 
