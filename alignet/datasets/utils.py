@@ -46,7 +46,7 @@ def percentile_minmax(t, low=1.0, high=99.0, max_samples=100_000):
 _SHARED_CACHE = {}
 
 
-def build_shared_cache(file_paths, resample_fn):
+def build_shared_cache(file_paths, resample_fn, min_res=None, max_res=None):
     """Pre-load images into a process-shared tensor cache.
 
     Args:
@@ -57,12 +57,18 @@ def build_shared_cache(file_paths, resample_fn):
         key = str(p)
         if key in _SHARED_CACHE:
             continue
-        print(f"Loading {key}", flush=True)
-        arr = resample_fn(p)
+        if min_res is not None:
+            print(f"Loading {key}_{int(max_res)}_{int(min_res)}", flush=True)
+        else:
+            print(f"Loading {key}", flush=True)
+        arr = resample_fn(p, min_res, max_res)
         t = torch.from_numpy(arr).permute(2, 0, 1)  # C×H×W
         t = percentile_minmax(t, 1, 99)
         t.share_memory_()
-        _SHARED_CACHE[key] = t
+        if min_res is not None:
+            _SHARED_CACHE[key+f"_{int(max_res)}"+f"_{int(min_res)}"] = t
+        else:
+            _SHARED_CACHE[key] = t
     print(f"Preloaded {len(file_paths)} images.", flush=True)
 
 
@@ -83,7 +89,7 @@ def create_dataloader(dataset_cfg, img_size, batch_size, num_workers, train=True
         shuffle=train,
         num_workers=num_workers,
         pin_memory=True,
-        prefetch_factor=12,
+        prefetch_factor=4,
         persistent_workers=True,
     )
 
