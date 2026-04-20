@@ -5,6 +5,8 @@ import yaml
 import os
 import glob
 
+from torch.utils.data import ConcatDataset
+
 import pytorch_lightning as pl
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
@@ -99,6 +101,7 @@ if __name__ == "__main__":
     )
 
     trainer = pl.Trainer(
+        num_nodes=1,
         accelerator=config["trainer"]["accelerator"],
         devices=config["trainer"]["devices"],
         strategy="ddp",
@@ -114,25 +117,45 @@ if __name__ == "__main__":
 
     # --- preload MDAS datasets into shared memory if present ---
     for key, train_cfg in config["datasets"].items():
-        if train_cfg["type"] in ("MDASDataset", "MDASCSVDataset"):
+        if train_cfg["type"] in ("MDASDataset", "MDASCSVDataset", "ICGCDataset"):
             print(f'Preloading dataset {train_cfg["type"]}...', flush=True)
             # make dummy instances to harvest paths + resample
             train_ds = DATASET_REGISTRY.get(train_cfg["type"])(root_path=train_cfg["path"], img_size=config["model"]["img_size"], train=True, cfg=train_cfg)
             # fill shared memory
-            build_shared_cache(train_ds.file_paths, train_ds.resample_geotiff)
+            if train_cfg["type"] == "ICGCDataset":
+                build_shared_cache(train_ds.file_paths, train_ds.resample_geotiff, min_res=10.0, max_res=5.0)
+                build_shared_cache(train_ds.file_paths, train_ds.resample_geotiff, min_res=20.0, max_res=5.0)
+                build_shared_cache(train_ds.file_paths, train_ds.resample_geotiff, min_res=30.0, max_res=3.0)
+                build_shared_cache(train_ds.file_paths, train_ds.resample_geotiff, min_res=50.0, max_res=5.0)
+            else:
+                build_shared_cache(train_ds.file_paths, train_ds.resample_geotiff)
 
-    print(f"[RANK {trainer.global_rank}] Waiting for shared cache synchronization...", flush=True)
-    trainer.strategy.barrier() 
-    print(f"[RANK {trainer.global_rank}] Cache ready, starting training.", flush=True)
+    # Create train dataloader(s)
+    train_datasets = []
+    for key, train_cfg in config["datasets"].items():
+        if key.startswith("train"):
+            ds = DATASET_REGISTRY.get(train_cfg["type"])(
+                root_path=train_cfg.get("path"),
+                img_size=config["model"]["img_size"],
+                train=True,
+                cfg=train_cfg
+            )
+            train_datasets.append(ds)
+            print(f"[DATA] Train dataset '{key}' ({train_cfg['type']}): {len(ds)} samples", flush=True)
 
-    # Create train dataloader
-    train_loader = create_dataloader(
-        config["datasets"]["train"],
-        config["model"]["img_size"],
-        config["train"]["batch_size"],
-        config["train"]["num_workers"]
+    combined_train_ds = ConcatDataset(train_datasets)
+
+    train_loader = torch.utils.data.DataLoader(
+        combined_train_ds,
+        batch_size=config["train"]["batch_size"],
+        shuffle=True,
+        num_workers=config["train"]["num_workers"],
+        pin_memory=True,
+        prefetch_factor=4,
+        persistent_workers=True,
+        drop_last=True,
     )
-    print(f"[DATA] Train data loader created with {len(train_loader.dataset)} samples.", flush=True)
+    print(f"[DATA] Combined train loader: {len(combined_train_ds)} samples total.", flush=True)
 
     # Create validation dataloaders
     val_loaders = []
