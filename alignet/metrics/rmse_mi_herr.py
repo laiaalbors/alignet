@@ -16,6 +16,11 @@ def calculate_rmse(gt, pred):
 def calculate_mpd(gt, pred):
     return np.mean(np.linalg.norm(gt - pred, axis=1))
 
+@METRIC_REGISTRY.register("calculate_acc")
+def calculate_acc(gt, pred, thr=20):
+    mpd = np.mean(np.linalg.norm(gt - pred, axis=1))
+    return mpd <= thr
+
 @METRIC_REGISTRY.register("calculate_iou")
 def calculate_iou(gt, pred):
     try:
