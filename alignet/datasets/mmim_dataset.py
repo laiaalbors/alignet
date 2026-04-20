@@ -36,6 +36,9 @@ class MMIMDataset(BaseDataset):
             self.file_paths = []
             for mat_file in self.root.rglob("*.mat"):
                 self.file_paths.append(mat_file)
+        
+        self.paired_crop = PairedCenterCrop(img_size)
+    
 
     def __getitem__(self, index):
         mat_path = self.file_paths[index]
@@ -44,6 +47,8 @@ class MMIMDataset(BaseDataset):
         image = self.transforms(data["I_fix"][0])
         transformed_image = self.transforms(data["I_move"][0])
         image_depth, image_height, image_width = image.shape
+
+        image_crop, transformed_image_crop, offset1, offset2, h, w, contained = self.paired_crop(image, transformed_image)
 
         label = torch.tensor(0, dtype=torch.long)
 
@@ -56,16 +61,23 @@ class MMIMDataset(BaseDataset):
         inverse_matrix = inverse_matrix.reshape(9)[:-1]
         forward_matrix = forward_matrix.reshape(9)[:-1]
 
-        inverse_matrix = normalize_affine_matrix(inverse_matrix, width=image_width, height=image_height)
-        forward_matrix = normalize_affine_matrix(forward_matrix, width=image_width, height=image_height)
+        inverse_matrix_norm = normalize_affine_matrix(inverse_matrix, image_width, image_height)
+        forward_matrix_norm = normalize_affine_matrix(forward_matrix, image_width, image_height)
+
+        inverse_matrix = adjust_affine_transformation(inverse_matrix, offset1, offset2)
+        forward_matrix = adjust_affine_transformation(forward_matrix, offset1, offset2)
+
+        inverse_matrix_crop_norm = normalize_affine_matrix(inverse_matrix, width=w, height=h)
+        forward_matrix_crop_norm = normalize_affine_matrix(forward_matrix, width=w, height=h)
 
         # Create masks
-        mask_original, mask_transformed = create_masks(None, None, int(image_height), int(image_width), (1, int(image_height), int(image_width)), None, None, inverse_matrix, forward_matrix, True)
+        # mask_original, mask_transformed = create_masks(None, None, int(image_height), int(image_width), (1, int(image_height), int(image_width)), None, None, inverse_matrix, forward_matrix, True)
+        mask_original, mask_transformed = create_masks(offset1, offset2, h, w, (image_depth, image_height, image_width), inverse_matrix_norm, forward_matrix_norm, inverse_matrix_crop_norm, forward_matrix_crop_norm, contained)
 
         return (
-            image, transformed_image, 
+            image_crop, transformed_image_crop, 
             label, label, 
-            inverse_matrix, forward_matrix, 
+            inverse_matrix_crop_norm, forward_matrix_crop_norm, 
             mask_original, mask_transformed,
         )
 

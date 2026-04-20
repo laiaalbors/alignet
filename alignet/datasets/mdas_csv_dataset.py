@@ -88,7 +88,7 @@ class MDASCSVDataset(BaseDataset):
         print(f"Unique image_path: {len(df['image_path'].unique())}", flush=True)
         print(f"Unique image_path2: {len(df['image_path2'].unique())}", flush=True)
 
-    def resample_geotiff(self, file_path):
+    def resample_geotiff(self, file_path, min_res=None, max_res=None):
         file_path = str(file_path)
         with rasterio.open(file_path) as dataset:
             band_idx = 2 if "Sentinel-2" in file_path else 1

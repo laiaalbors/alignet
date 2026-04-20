@@ -4,12 +4,10 @@ import itertools
 import numpy as np
 
 import torch
-import torchvision.transforms.functional as F
 
 import rasterio
 
 from datasets.base_dataset import BaseDataset
-from datasets.utils import PairedRandomCrop, PairedCenterCrop
 from utils.registry import DATASET_REGISTRY
 
 

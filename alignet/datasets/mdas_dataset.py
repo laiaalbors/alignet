@@ -62,7 +62,7 @@ class MDASDataset(BaseDataset):
                     [[self.label_to_idx[label1], self.label_to_idx[label2]]] * len(pairs)
                 )
 
-    def resample_geotiff(self, file_path):
+    def resample_geotiff(self, file_path, min_res=None, max_res=None):
         file_path = str(file_path)
         with rasterio.open(file_path) as dataset:
             band_idx = 2 if "Sentinel-2" in file_path else 1
