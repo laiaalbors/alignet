@@ -85,8 +85,9 @@ class AligNetViT(nn.Module):
     def forward(self, x1, x2):
         # x1 : [B, Image]
         # x2 : [B, Image]
-        x1 = x1.repeat(1, 3, 1, 1).to(self.encoder.device)
-        x2 = x2.repeat(1, 3, 1, 1).to(self.encoder.device)
+        if x1.shape[1] != 3:
+            x1 = x1.repeat(1, 3, 1, 1).to(self.encoder.device)
+            x2 = x2.repeat(1, 3, 1, 1).to(self.encoder.device)
         x1_emb = self.encoder(x1).last_hidden_state
         x2_emb = self.encoder(x2).last_hidden_state
         if self.project_embed:
