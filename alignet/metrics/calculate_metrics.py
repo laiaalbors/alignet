@@ -1,5 +1,8 @@
+import os
 import torch
 import numpy as np
+
+import torchvision.utils as vutils
 
 from utils.transforms import STN
 from utils.utils import inverse_affine_matrix, apply_normalized_affine_to_polygon
@@ -15,11 +18,42 @@ def calculate_metrics(img_r, img_s, forward_tp_gt, inverse_tp_gt, forward_tp_pre
     img_s_registered = STN(img_r, inverse_affine_matrix(forward_tp_pred, device))
     img_r_registered = STN(img_s, inverse_affine_matrix(inverse_tp_pred, device))
 
+    # Apply GT registrations
+    img_s_registered_gt = STN(img_r, inverse_affine_matrix(forward_tp_gt, device))
+    img_r_registered_gt = STN(img_s, inverse_affine_matrix(inverse_tp_gt, device))
+
     # Get bbox polygons
     bbox_r = np.array([[0, 0], [w-1, 0], [w-1, h-1], [0, h-1]])
     bbox_s = apply_normalized_affine_to_polygon(bbox_r, forward_tp_gt.cpu().squeeze().numpy(), h, w)
     bbox_r_registered = apply_normalized_affine_to_polygon(bbox_s, inverse_tp_pred.cpu().squeeze().numpy(), h, w)
     bbox_s_registered = apply_normalized_affine_to_polygon(bbox_r, forward_tp_pred.cpu().squeeze().numpy(), h, w)
+
+    # # -- Qualitative results --
+    # path_save = "path/where/to/save/qualitative/examples/"
+    # num_files = len(os.listdir(path_save))
+    # print(f"img_r_registered: {img_r_registered.shape} - {type(img_r_registered)}", flush=True)
+    # print(f"    inverse_tp_pred: {inverse_tp_pred}", flush=True)
+    # vutils.save_image(img_r_registered, path_save+f'output_s_{num_files+1}.png', normalize=True)
+    # vutils.save_image(img_s_registered, path_save+f'output_r_{num_files+1}.png', normalize=True)
+    # vutils.save_image(img_r, path_save+f'input_r_{num_files+1}.png', normalize=True)
+    # vutils.save_image(img_s, path_save+f'input_s_{num_files+1}.png', normalize=True)
+    # img_s_registered_gt = STN(img_r, inverse_affine_matrix(forward_tp_gt, device))
+    # img_r_registered_gt = STN(img_s, inverse_affine_matrix(inverse_tp_gt, device))
+    # vutils.save_image(img_r_registered_gt, path_save+f'output_s_{num_files+1}_gt.png', normalize=True)
+    # vutils.save_image(img_s_registered_gt, path_save+f'output_r_{num_files+1}_gt.png', normalize=True)
+    # bbox_r_registered_ = apply_normalized_affine_to_polygon(bbox_r, inverse_tp_pred.cpu().squeeze().numpy(), h, w)
+    # bbox_s_registered_ = apply_normalized_affine_to_polygon(bbox_r, forward_tp_pred.cpu().squeeze().numpy(), h, w)
+    # bbox_r_registered_gt_ = apply_normalized_affine_to_polygon(bbox_r, inverse_tp_gt.cpu().squeeze().numpy(), h, w)
+    # bbox_s_registered_gt_ = apply_normalized_affine_to_polygon(bbox_r, forward_tp_gt.cpu().squeeze().numpy(), h, w)
+    # print(f"[PRED] bbox_r_registered file: {num_files+1}:")
+    # print(bbox_r_registered_)
+    # print(f"\n[PRED] bbox_s_registered file: {num_files+1}:")
+    # print(bbox_s_registered_, flush=True)
+    # print(f"\n[GT] bbox_r_registered file: {num_files+1}:")
+    # print(bbox_r_registered_gt_)
+    # print(f"\n[GT] bbox_s_registered file: {num_files+1}:")
+    # print(bbox_s_registered_gt_, flush=True)
+    # # -------------------------
 
     if forward_tp_gt.shape[-1] == 6:
         f = 2
@@ -55,6 +89,11 @@ def calculate_metrics(img_r, img_s, forward_tp_gt, inverse_tp_gt, forward_tp_pre
         elif name in ('auc', 'acc'):
             metric_results[name].append(METRIC_REGISTRY.get('calculate_mpd')(bbox_r, bbox_r_registered))
             metric_results[name].append(METRIC_REGISTRY.get('calculate_mpd')(bbox_s, bbox_s_registered))
+            if name == "acc":
+                print("\n", METRIC_REGISTRY.get('calculate_mpd')(bbox_r, bbox_r_registered), "-", METRIC_REGISTRY.get('calculate_mpd')(bbox_s, bbox_s_registered))
+        elif name == 'ssim':
+            metric_results[name] += METRIC_REGISTRY.get(options['type'])(img_r_registered_gt, img_r_registered)
+            metric_results[name] += METRIC_REGISTRY.get(options['type'])(img_s_registered_gt, img_s_registered)
 
     return metric_results
 

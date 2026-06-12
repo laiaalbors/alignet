@@ -3,6 +3,8 @@ from shapely.geometry import Polygon
 from shapely.errors import GEOSException
 from shapely.validation import make_valid
 
+from kornia.metrics import ssim as kornia_ssim
+
 from torch.nn.functional import l1_loss
 
 from losses.registration_loss import MILoss
@@ -68,3 +70,19 @@ def calculate_mi(gt, pred):
 @METRIC_REGISTRY.register("calculate_re")
 def calculate_re(gt, pred):
     return l1_loss(pred, gt).cpu().numpy()
+
+@METRIC_REGISTRY.register("calculate_ssim")
+def calculate_ssim(gt_warped, pred_warped, window_size=11, max_val=1.0):
+    """
+    Calcula l'SSIM entre la imatge warpejada amb GT i la predida.
+    Entrada: Tensors (B, C, H, W).
+    Sortida: Valor escalar (mitjana del batch).
+    """
+    # Assegurem que els tensors estiguin en el rang correcte (0 a 1)
+    # Si les teves imatges estan normalitzades diferent, cal ajustar max_val
+    
+    # kornia_ssim retorna un tensor amb el mapa de similitud per píxel
+    ssim_map = kornia_ssim(gt_warped, pred_warped, window_size=window_size, max_val=max_val)
+    
+    # Retornem la mitjana de tot el batch
+    return ssim_map.mean().item()
