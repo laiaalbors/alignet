@@ -44,8 +44,8 @@ class MMIMDataset(BaseDataset):
         mat_path = self.file_paths[index]
 
         data = loadmat(mat_path)
-        image = self.transforms(data["I_fix"][0])
-        transformed_image = self.transforms(data["I_move"][0])
+        image = self.transforms(data["I_fix"][:,:,0])
+        transformed_image = self.transforms(data["I_move"][:,:,0])
         image_depth, image_height, image_width = image.shape
 
         image_crop, transformed_image_crop, offset1, offset2, h, w, contained = self.paired_crop(image, transformed_image)
