@@ -1,4 +1,5 @@
 import os
+import math
 import random
 import numpy as np
 from PIL import Image
@@ -24,6 +25,7 @@ class ImageNetDataset(BaseDataset):
 
         if self.mode == "multi":
             print("[Warning] ImageNet cannot be used with multimodal training. Switching to mono.", flush=True)
+            self.mode = "mono"
 
         # img_size is passed to super() so self.paired_crop is already set, but
         # ImageNet always uses "contained=True" for random crop, which matches the base default.
@@ -38,6 +40,13 @@ class ImageNetDataset(BaseDataset):
         with Image.open(self.file_paths[index]) as image_pil:
             image_pil = image_pil.convert("RGB" if self.train else "L")
             image = self.transforms(image_pil)
+
+            # Ensure image is at least img_size in both dimensions
+            if image.shape[1] < self.img_size or image.shape[2] < self.img_size:
+                scale_factor = max(self.img_size / image.shape[1], self.img_size / image.shape[2])
+                new_h = math.ceil(image.shape[1] * scale_factor)
+                new_w = math.ceil(image.shape[2] * scale_factor)
+                image = F.resize(image, [new_h, new_w])
 
         image_depth, image_height, image_width = image.shape
         label = torch.tensor(self.labels[0], dtype=torch.long)
@@ -71,4 +80,4 @@ class ImageNetDataset(BaseDataset):
         return image1_crop, image2_crop, label, label, inv_norm, fwd_norm, mask1, mask2
 
     def __len__(self):
-        return len(self.file_paths)
+        return len(self.file_paths) # Change to 15000 when fine-tuning the model together with real RS datasets

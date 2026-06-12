@@ -22,6 +22,7 @@ class ImageNetCSVDataset(BaseDataset):
 
         if self.mode == "multi":
             print("[Warning] ImageNet cannot be used with multimodal training. Switching to mono.", flush=True)
+            self.mode = "mono"
 
     def __getitem__(self, index):
         row = self.df.iloc[index]
@@ -29,6 +30,13 @@ class ImageNetCSVDataset(BaseDataset):
         with Image.open(os.path.join(self.data_path, row["image_path"])) as image_pil:
             image_pil = image_pil.convert("RGB" if self.train else "L")
             image = self.transforms(image_pil)
+
+            # Ensure image is at least img_size in both dimensions
+            if image.shape[1] < self.img_size or image.shape[2] < self.img_size:
+                scale_factor = max(self.img_size / image.shape[1], self.img_size / image.shape[2])
+                new_h = math.ceil(image.shape[1] * scale_factor)
+                new_w = math.ceil(image.shape[2] * scale_factor)
+                image = F.resize(image, [new_h, new_w])
 
         image_depth, image_height, image_width = image.shape
         label = torch.tensor(self.labels[0], dtype=torch.long)
