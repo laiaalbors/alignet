@@ -82,6 +82,7 @@ class AligNetModel(pl.LightningModule):
 
         if self.test_cfg:
             self.metric_results = {options['name']: {} for t, options in self.data_cfg.items()}
+            self.direction_evaluation = self.test_cfg.get('direction', 'both')
 
     def forward(self, img1, img2):
         pred_forward, pred_inverse = self.model(img1, img2)
@@ -165,7 +166,8 @@ class AligNetModel(pl.LightningModule):
         test_name = self.validation_names[dataloader_idx]
         self.metric_results[test_name] = calculate_metrics(img_r, img_s, gt_forward, gt_inverse, pred_forward, pred_inverse, mask_r, mask_s, 
                                                            self.test_cfg, self.metric_results[test_name], 
-                                                           h=self.model_cfg["img_size"], w=self.model_cfg["img_size"])
+                                                           h=self.model_cfg["img_size"], w=self.model_cfg["img_size"],
+                                                           direction=self.direction_evaluation)
 
     def on_test_epoch_end(self):
         test_dataloaders = self.trainer.test_dataloaders
@@ -185,9 +187,16 @@ class AligNetModel(pl.LightningModule):
                     acc10 = acc_corner_error(value, 10)
                     acc20 = acc_corner_error(value, 20)
                     print(f"    * ACC:    @3={acc3:.5f} - @5={acc5:.5f} - @10={acc10:.5f} - @20={acc20:.5f}")
-                else:
-                    avg_value = value / (num_samples*2)     # x2 because we compute the metrics in both directions
+                elif metric == "diff_rmse": 
+                    avg_value = value / (num_samples)
                     print(f"    * {metric}:    {avg_value:.5f}")
+                elif metric not in ('rmse_for', 'rmse_inv'):
+                    if self.direction_evaluation != 'both':
+                        avg_value = value / (num_samples)
+                        print(f"    * {metric}:    {avg_value:.5f}")
+                    else:
+                        avg_value = value / (num_samples*2)     # x2 because we compute the metrics in both directions
+                        print(f"    * {metric}:    {avg_value:.5f}")
                 
         self.metric_results = {name: {} for name in self.test_cfg['metrics'].keys()}
 
