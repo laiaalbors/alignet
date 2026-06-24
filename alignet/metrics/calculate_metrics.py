@@ -8,9 +8,11 @@ from utils.transforms import STN
 from utils.utils import inverse_affine_matrix, apply_normalized_affine_to_polygon
 from utils.registry import METRIC_REGISTRY
 
-def calculate_metrics(img_r, img_s, forward_tp_gt, inverse_tp_gt, forward_tp_pred, inverse_tp_pred, mask_r, mask_s, cfg, metric_results, h=256, w=256, direction='both'):
+def calculate_metrics(img_r, img_s, forward_tp_gt, inverse_tp_gt, forward_tp_pred, inverse_tp_pred, mask_r, mask_s, cfg, metric_results, h=256, w=256):
     device = img_r.device
 
+    path_save = cfg.get('path_save_images', None)
+    direction = cfg.get('direction', 'both')
     if direction not in ('both', 'forward', 'inverse'):
         print(f"[WARNING] Direction of evaluation not recognized. It should be one of these: 'both', 'forward', 'inverse'. Setting it to the default value: 'both'.", flush=True)
         direction = 'both'
@@ -37,32 +39,32 @@ def calculate_metrics(img_r, img_s, forward_tp_gt, inverse_tp_gt, forward_tp_pre
     bbox_r_registered = apply_normalized_affine_to_polygon(bbox_s, inverse_tp_pred.cpu().squeeze().numpy(), h, w)
     bbox_s_registered = apply_normalized_affine_to_polygon(bbox_r, forward_tp_pred.cpu().squeeze().numpy(), h, w)
 
-    # # -- Qualitative results --
-    # path_save = "path/where/to/save/qualitative/examples/"
-    # num_files = len(os.listdir(path_save))
-    # print(f"img_r_registered: {img_r_registered.shape} - {type(img_r_registered)}", flush=True)
-    # print(f"    inverse_tp_pred: {inverse_tp_pred}", flush=True)
-    # vutils.save_image(img_r_registered, path_save+f'output_s_{num_files+1}.png', normalize=True)
-    # vutils.save_image(img_s_registered, path_save+f'output_r_{num_files+1}.png', normalize=True)
-    # vutils.save_image(img_r, path_save+f'input_r_{num_files+1}.png', normalize=True)
-    # vutils.save_image(img_s, path_save+f'input_s_{num_files+1}.png', normalize=True)
-    # img_s_registered_gt = STN(img_r, inverse_affine_matrix(forward_tp_gt, device))
-    # img_r_registered_gt = STN(img_s, inverse_affine_matrix(inverse_tp_gt, device))
-    # vutils.save_image(img_r_registered_gt, path_save+f'output_s_{num_files+1}_gt.png', normalize=True)
-    # vutils.save_image(img_s_registered_gt, path_save+f'output_r_{num_files+1}_gt.png', normalize=True)
-    # bbox_r_registered_ = apply_normalized_affine_to_polygon(bbox_r, inverse_tp_pred.cpu().squeeze().numpy(), h, w)
-    # bbox_s_registered_ = apply_normalized_affine_to_polygon(bbox_r, forward_tp_pred.cpu().squeeze().numpy(), h, w)
-    # bbox_r_registered_gt_ = apply_normalized_affine_to_polygon(bbox_r, inverse_tp_gt.cpu().squeeze().numpy(), h, w)
-    # bbox_s_registered_gt_ = apply_normalized_affine_to_polygon(bbox_r, forward_tp_gt.cpu().squeeze().numpy(), h, w)
-    # print(f"[PRED] bbox_r_registered file: {num_files+1}:")
-    # print(bbox_r_registered_)
-    # print(f"\n[PRED] bbox_s_registered file: {num_files+1}:")
-    # print(bbox_s_registered_, flush=True)
-    # print(f"\n[GT] bbox_r_registered file: {num_files+1}:")
-    # print(bbox_r_registered_gt_)
-    # print(f"\n[GT] bbox_s_registered file: {num_files+1}:")
-    # print(bbox_s_registered_gt_, flush=True)
-    # # -------------------------
+    # -- Qualitative results --
+    if path_save is not None:
+        num_files = len(os.listdir(path_save))
+        print(f"img_r_registered: {img_r_registered.shape} - {type(img_r_registered)}", flush=True)
+        print(f"    inverse_tp_pred: {inverse_tp_pred}", flush=True)
+        vutils.save_image(img_r_registered, path_save+f'output_s_{num_files+1}.png', normalize=True)
+        vutils.save_image(img_s_registered, path_save+f'output_r_{num_files+1}.png', normalize=True)
+        vutils.save_image(img_r, path_save+f'input_r_{num_files+1}.png', normalize=True)
+        vutils.save_image(img_s, path_save+f'input_s_{num_files+1}.png', normalize=True)
+        img_s_registered_gt = STN(img_r, inverse_affine_matrix(forward_tp_gt, device))
+        img_r_registered_gt = STN(img_s, inverse_affine_matrix(inverse_tp_gt, device))
+        vutils.save_image(img_r_registered_gt, path_save+f'output_s_{num_files+1}_gt.png', normalize=True)
+        vutils.save_image(img_s_registered_gt, path_save+f'output_r_{num_files+1}_gt.png', normalize=True)
+        bbox_r_registered_ = apply_normalized_affine_to_polygon(bbox_r, inverse_tp_pred.cpu().squeeze().numpy(), h, w)
+        bbox_s_registered_ = apply_normalized_affine_to_polygon(bbox_r, forward_tp_pred.cpu().squeeze().numpy(), h, w)
+        bbox_r_registered_gt_ = apply_normalized_affine_to_polygon(bbox_r, inverse_tp_gt.cpu().squeeze().numpy(), h, w)
+        bbox_s_registered_gt_ = apply_normalized_affine_to_polygon(bbox_r, forward_tp_gt.cpu().squeeze().numpy(), h, w)
+        print(f"[PRED] bbox_r_registered file: {num_files+1}:")
+        print(bbox_r_registered_)
+        print(f"\n[PRED] bbox_s_registered file: {num_files+1}:")
+        print(bbox_s_registered_, flush=True)
+        print(f"\n[GT] bbox_r_registered file: {num_files+1}:")
+        print(bbox_r_registered_gt_)
+        print(f"\n[GT] bbox_s_registered file: {num_files+1}:")
+        print(bbox_s_registered_gt_, flush=True)
+    # -------------------------
 
     if forward_tp_gt.shape[-1] == 6:
         f = 2

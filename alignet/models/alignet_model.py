@@ -166,8 +166,7 @@ class AligNetModel(pl.LightningModule):
         test_name = self.validation_names[dataloader_idx]
         self.metric_results[test_name] = calculate_metrics(img_r, img_s, gt_forward, gt_inverse, pred_forward, pred_inverse, mask_r, mask_s, 
                                                            self.test_cfg, self.metric_results[test_name], 
-                                                           h=self.model_cfg["img_size"], w=self.model_cfg["img_size"],
-                                                           direction=self.direction_evaluation)
+                                                           h=self.model_cfg["img_size"], w=self.model_cfg["img_size"])
 
     def on_test_epoch_end(self):
         test_dataloaders = self.trainer.test_dataloaders
