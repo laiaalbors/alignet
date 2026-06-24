@@ -3,9 +3,10 @@
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=3
 #SBATCH --time=20:00
-#SBATCH --output=./logs/test_alignet_%A_%a.log
-#SBATCH --error=./logs/test_alignet_%A_%a.log
-#SBATCH --job-name=ALIGNetArray
+#SBATCH --exclude=gpic09,gpic10
+#SBATCH --output=./logs/test/test_lora_%A_%a.log
+#SBATCH --error=./logs/test/test_lora_%A_%a.log
+#SBATCH --job-name=LoRAArray   # LoRAArray / AnySatArray / SoftConArray / LVDArray / DOFAArray / PanopticonArray
 
 
 set -euo pipefail
