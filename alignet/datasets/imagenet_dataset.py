@@ -27,6 +27,8 @@ class ImageNetDataset(BaseDataset):
             print("[Warning] ImageNet cannot be used with multimodal training. Switching to mono.", flush=True)
             self.mode = "mono"
 
+        self.use_subset = cfg.get("use_subset", False)
+
         # img_size is passed to super() so self.paired_crop is already set, but
         # ImageNet always uses "contained=True" for random crop, which matches the base default.
 
@@ -80,4 +82,6 @@ class ImageNetDataset(BaseDataset):
         return image1_crop, image2_crop, label, label, inv_norm, fwd_norm, mask1, mask2
 
     def __len__(self):
-        return len(self.file_paths) # Change to 15000 when fine-tuning the model together with real RS datasets
+        if self.use_subset:
+            return 15000    # Just use a subset when fine-tuning the model together with real RS datasets so that it does not dominate
+        return len(self.file_paths)
