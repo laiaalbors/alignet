@@ -246,7 +246,19 @@ class Quantization(torch.nn.Module):
 # ---------------------------------------------------------------------------
 
 class RGBThermalAug:
-    """Pseudo-thermal augmentation. Accepts PIL Image or torch.Tensor. Returns (1, H, W)."""
+    """
+    Pseudo-thermal augmentation. Accepts PIL Image or torch.Tensor. Returns (1, H, W).
+
+    Adapted from:
+    Author: OnderT (Onder Tutun)
+    Source: https://github.com/OnderT/XoFTR
+    File: src/utils/augment.py
+    
+    Modifications: 
+    - Added support for PIL Images and torch.Tensors in `_to_numpy_rgb`.
+    - Refactored `__call__` to process a single image directly.
+    - Changed output from a 3-channel RGB numpy array to a 1-channel torch.Tensor.
+    """
 
     def __init__(self):
         self.blur = A.Blur(p=0.7, blur_limit=(2, 4))
