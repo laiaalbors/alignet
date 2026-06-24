@@ -1,7 +1,7 @@
-name: "test_alignet_imagenet_sat"
+name: "test_alignet_affine_sat"
 
 trainer:
-  accelerator: cuda
+  accelerator: gpu
   devices: 1
   precision: 32
   seed: 33
@@ -20,31 +20,27 @@ model:
   model_name: AligNetModel
   architecture: AligNetViT
   input_channels: 1
+  img_size: 256
   attention_heads: 4
   window_size: 16
   embed_dim: 1024
   num_transform_parameters: 6
 
 test:
+  direction: both                                                      # both / forward / inverse
   num_workers: 3
-  checkpoint_path: "./checkpoints/affine_imagenet_sat_sensoraug.ckpt"    # "./checkpoints/affine_imagenet_sat_sensoraug.ckpt" / "./checkpoints/affine_imagenet_lvd_sensoraug.ckpt" / "./checkpoints/affine_imagenet_sat_traditionalaug.ckpt" / "./checkpoints/affine_imagenet_sat_noaug.ckpt"
+  checkpoint_path: "checkpoints/affine_imagenet_sat_sensoraug.ckpt"    # "checkpoints/affine_imagenet_sat_sensoraug.ckpt" / "checkpoints/affine_imagenet_lvd_sensoraug.ckpt" / "checkpoints/affine_imagenet_sat_traditionalaug.ckpt" / "checkpoints/affine_imagenet_sat_noaug.ckpt"
 
   metrics:
     rmse:
       type: calculate_rmse
       better: lower
-    mpd:
-      type: calculate_mpd
-      better: lower
-    iou:
-      type: calculate_iou
-      better: higher
     mi:
       type: calculate_mi
       better: higher
-    re:
-      type: calculate_re
-      better: lower
     h_err:
       type: calculate_h_err
+      better: lower
+    diff_rmse:
+      type: calculate_rmse
       better: lower

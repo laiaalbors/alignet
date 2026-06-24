@@ -1,7 +1,7 @@
 name: "alignet_imagenet_affine"
 
 trainer:
-  accelerator: cuda
+  accelerator: gpu
   devices: 1
   precision: 32    # 32 / 16-mixed
   seed: 33
@@ -43,18 +43,19 @@ model:
   window_size: 16
   num_transform_parameters: 6
   project_embed: false
+  use_lora: false
 
 loss:
   type: RegistrationLoss
 
 train:
   num_workers: 3
-  freeze_policy: encoder      # ~ / encoder / except_encoder / except_encoder_decoder
+  freeze_policy: encoder
   batch_size: 70
   epochs: 40
   lr: 0.0001
   momentum: 0.9
-  scheduler: ExponentialLR    # ExponentialLR / WarmUp_ExponentialLR
+  scheduler: ExponentialLR
   scheduler_gamma: 0.99999
   checkpoint_dir: "./experiments"
   checkpoint_path: ~
