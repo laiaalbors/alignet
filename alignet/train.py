@@ -12,6 +12,9 @@ from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.callbacks import TQDMProgressBar
 
+from datetime import timedelta
+from pytorch_lightning.strategies import DDPStrategy
+
 import datasets
 import architectures
 import models
@@ -104,7 +107,9 @@ if __name__ == "__main__":
         num_nodes=1,
         accelerator=config["trainer"]["accelerator"],
         devices=config["trainer"]["devices"],
-        strategy="ddp",
+        # strategy="ddp",
+        # strategy="ddp_find_unused_parameters_true",
+        strategy=DDPStrategy(timeout=timedelta(minutes=120)),
         precision=config["trainer"]["precision"],
         max_epochs=config["train"]["epochs"],
         logger=wandb_logger,
@@ -112,7 +117,6 @@ if __name__ == "__main__":
         val_check_interval=config["train"]["val_interval"],
         log_every_n_steps=config["train"]["log_interval"],
         enable_progress_bar=True,
-        # strategy="ddp_find_unused_parameters_true",
     )
 
     # --- preload MDAS datasets into shared memory if present ---
