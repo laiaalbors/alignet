@@ -1,4 +1,0 @@
-time python -W ignore alignet/test.py --config "./configs/test_alignet_config_projective_ssl4eos12.yml" --override datasets.test_1.path=files/test/ssl4eos12_test_affine_projective_pairs_S1_S1_cross_season.csv
-time python -W ignore alignet/test.py --config "./configs/test_alignet_config_projective_ssl4eos12.yml" --override datasets.test_1.path=files/test/ssl4eos12_test_affine_projective_pairs_S2_S2_cross_season.csv
-time python -W ignore alignet/test.py --config "./configs/test_alignet_config_projective_ssl4eos12.yml" --override datasets.test_1.path=files/test/ssl4eos12_test_affine_projective_pairs_S1_S2_cross_season.csv
-time python -W ignore alignet/test.py --config "./configs/test_alignet_config_projective_ssl4eos12.yml" --override datasets.test_1.path=files/test/ssl4eos12_test_affine_projective_pairs_S1_S2_same_season.csv
