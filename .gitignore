@@ -10,6 +10,12 @@ checkpoints/
 lightning_logs/
 logs/
 CLAUDE.md
+configs_mine/
+files/qualitative/
+inference/
+logs2csv.*
+test.sh
+train*.sh
 
 
 # JetBrains PyCharm IDE
