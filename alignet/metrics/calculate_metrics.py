@@ -56,14 +56,15 @@ def calculate_metrics(img_r, img_s, forward_tp_gt, inverse_tp_gt, forward_tp_pre
         bbox_s_registered_ = apply_normalized_affine_to_polygon(bbox_r, forward_tp_pred.cpu().squeeze().numpy(), h, w)
         bbox_r_registered_gt_ = apply_normalized_affine_to_polygon(bbox_r, inverse_tp_gt.cpu().squeeze().numpy(), h, w)
         bbox_s_registered_gt_ = apply_normalized_affine_to_polygon(bbox_r, forward_tp_gt.cpu().squeeze().numpy(), h, w)
-        print(f"[PRED] bbox_r_registered file: {num_files+1}:")
-        print(bbox_r_registered_)
-        print(f"\n[PRED] bbox_s_registered file: {num_files+1}:")
-        print(bbox_s_registered_, flush=True)
-        print(f"\n[GT] bbox_r_registered file: {num_files+1}:")
-        print(bbox_r_registered_gt_)
-        print(f"\n[GT] bbox_s_registered file: {num_files+1}:")
-        print(bbox_s_registered_gt_, flush=True)
+        if cfg.get('metrics', False):
+            print(f"[PRED] bbox_r_registered file: {num_files+1}:")
+            print(bbox_r_registered_)
+            print(f"\n[PRED] bbox_s_registered file: {num_files+1}:")
+            print(bbox_s_registered_, flush=True)
+            print(f"\n[GT] bbox_r_registered file: {num_files+1}:")
+            print(bbox_r_registered_gt_)
+            print(f"\n[GT] bbox_s_registered file: {num_files+1}:")
+            print(bbox_s_registered_gt_, flush=True)
     # -------------------------
 
     if forward_tp_gt.shape[-1] == 6:
@@ -78,46 +79,54 @@ def calculate_metrics(img_r, img_s, forward_tp_gt, inverse_tp_gt, forward_tp_pre
     else:
         raise ValueError(f"Number of transformation parameters not recognized, expected 6 or 8, got {forward_tp_gt.shape[-1]}")
 
-    for name, options in cfg['metrics'].items():
-        if name not in metric_results:
-            metric_results[name] = [] if name in ("auc", "acc") else 0
-        if "rmse_for" not in metric_results:
-            metric_results['rmse_for'] = 0
-        if "rmse_inv" not in metric_results:
-            metric_results['rmse_inv'] = 0
-        
-        if name in ('rmse', 'mpd', 'iou'):
-            if inverse_dic:
-                metric_results[name] += METRIC_REGISTRY.get(options['type'])(bbox_r, bbox_r_registered)
-            if forward_dir:
-                metric_results[name] += METRIC_REGISTRY.get(options['type'])(bbox_s, bbox_s_registered)
-        elif name in ('acc5', 'acc10', 'acc20'):
-            if inverse_dic:
-                metric_results[name] += METRIC_REGISTRY.get(options['type'])(bbox_r, bbox_r_registered, thr=int(name[3:]))
-            if forward_dir:
-                metric_results[name] += METRIC_REGISTRY.get(options['type'])(bbox_s, bbox_s_registered, thr=int(name[3:]))
-        elif name == 'h_err':
-            if inverse_dic:
-                metric_results[name] += METRIC_REGISTRY.get(options['type'])(inverse_tp_gt.cpu().squeeze().numpy().reshape(f,3), inverse_tp_pred.cpu().squeeze().numpy().reshape(f,3))
-            if forward_dir:
-                metric_results[name] += METRIC_REGISTRY.get(options['type'])(forward_tp_gt.cpu().squeeze().numpy().reshape(f,3), forward_tp_pred.cpu().squeeze().numpy().reshape(f,3))
-        elif name in ('mi', 're'):
-            if inverse_dic:
-                metric_results[name] += METRIC_REGISTRY.get(options['type'])(img_r*mask_r, img_r_registered)
-            if forward_dir:
-                metric_results[name] += METRIC_REGISTRY.get(options['type'])(img_s*mask_s, img_s_registered)
-        elif name in ('auc', 'acc'):
-            if inverse_dic:
-                metric_results[name].append(METRIC_REGISTRY.get('calculate_mpd')(bbox_r, bbox_r_registered))
-            if forward_dir:
-                metric_results[name].append(METRIC_REGISTRY.get('calculate_mpd')(bbox_s, bbox_s_registered))
-        elif name == 'ssim':
-            if inverse_dic:
-                metric_results[name] += METRIC_REGISTRY.get(options['type'])(img_r_registered_gt, img_r_registered)
-            if forward_dir:
-                metric_results[name] += METRIC_REGISTRY.get(options['type'])(img_s_registered_gt, img_s_registered)
-        elif name == 'diff_rmse':
-            metric_results[name] += abs(METRIC_REGISTRY.get('calculate_rmse')(bbox_r, bbox_r_registered) - METRIC_REGISTRY.get('calculate_rmse')(bbox_s, bbox_s_registered))
+    if cfg.get('metrics', False):
+        for name, options in cfg['metrics'].items():
+            if name not in metric_results:
+                metric_results[name] = [] if name in ("auc", "acc") else 0
+            if "rmse_for" not in metric_results:
+                metric_results['rmse_for'] = 0
+            if "rmse_inv" not in metric_results:
+                metric_results['rmse_inv'] = 0
+            
+            if name in ('rmse', 'mpd', 'iou'):
+                if inverse_dic:
+                    metric_results[name] += METRIC_REGISTRY.get(options['type'])(bbox_r, bbox_r_registered)
+                if forward_dir:
+                    metric_results[name] += METRIC_REGISTRY.get(options['type'])(bbox_s, bbox_s_registered)
+            elif name in ('acc5', 'acc10', 'acc20'):
+                if inverse_dic:
+                    metric_results[name] += METRIC_REGISTRY.get(options['type'])(bbox_r, bbox_r_registered, thr=int(name[3:]))
+                if forward_dir:
+                    metric_results[name] += METRIC_REGISTRY.get(options['type'])(bbox_s, bbox_s_registered, thr=int(name[3:]))
+            elif name == 'h_err':
+                if inverse_dic:
+                    metric_results[name] += METRIC_REGISTRY.get(options['type'])(inverse_tp_gt.cpu().squeeze().numpy().reshape(f,3), inverse_tp_pred.cpu().squeeze().numpy().reshape(f,3))
+                if forward_dir:
+                    metric_results[name] += METRIC_REGISTRY.get(options['type'])(forward_tp_gt.cpu().squeeze().numpy().reshape(f,3), forward_tp_pred.cpu().squeeze().numpy().reshape(f,3))
+            elif name in ('mi', 're'):
+                if inverse_dic:
+                    metric_results[name] += METRIC_REGISTRY.get(options['type'])(img_r*mask_r, img_r_registered)
+                if forward_dir:
+                    metric_results[name] += METRIC_REGISTRY.get(options['type'])(img_s*mask_s, img_s_registered)
+            elif name in ('auc', 'acc'):
+                if inverse_dic:
+                    metric_results[name].append(METRIC_REGISTRY.get('calculate_mpd')(bbox_r, bbox_r_registered))
+                if forward_dir:
+                    metric_results[name].append(METRIC_REGISTRY.get('calculate_mpd')(bbox_s, bbox_s_registered))
+            elif name == 'ssim':
+                if inverse_dic:
+                    metric_results[name] += METRIC_REGISTRY.get(options['type'])(img_r_registered_gt, img_r_registered)
+                if forward_dir:
+                    metric_results[name] += METRIC_REGISTRY.get(options['type'])(img_s_registered_gt, img_s_registered)
+            elif name == 'diff_rmse':
+                metric_results[name] += abs(METRIC_REGISTRY.get('calculate_rmse')(bbox_r, bbox_r_registered) - METRIC_REGISTRY.get('calculate_rmse')(bbox_s, bbox_s_registered))
+
+            # if name == "mpd":
+            #     print("\n[INVERSE]", METRIC_REGISTRY.get('calculate_mpd')(bbox_r, bbox_r_registered), "- [FORWARD]", METRIC_REGISTRY.get('calculate_mpd')(bbox_s, bbox_s_registered))
+
+            # if name == "mpd":
+            #     print(f"\n[forward] MI: {METRIC_REGISTRY.get('calculate_mi')(img_s*mask_s, img_s_registered)} - MPD: {METRIC_REGISTRY.get('calculate_mpd')(bbox_s, bbox_s_registered)}", flush=True)
+            #     print(f"\n[inverse] MI: {METRIC_REGISTRY.get('calculate_mi')(img_r*mask_r, img_r_registered)} - MPD: {METRIC_REGISTRY.get('calculate_mpd')(bbox_r, bbox_r_registered)}", flush=True)
 
     return metric_results
 

@@ -170,34 +170,37 @@ class AligNetModel(pl.LightningModule):
 
     def on_test_epoch_end(self):
         test_dataloaders = self.trainer.test_dataloaders
-        for idx, test_name in enumerate(self.validation_names):
-            print(f"\nTest results for dataset: {test_name}:")
-            num_samples = len(test_dataloaders[idx].dataset)
-            for metric, value in self.metric_results[test_name].items():
-                if metric == "auc":
-                    auc3  = auc_corner_error(value, 3)
-                    auc5  = auc_corner_error(value, 5)
-                    auc10  = auc_corner_error(value, 10)
-                    auc20  = auc_corner_error(value, 20)
-                    print(f"    * AUC:    @3={auc3:.5f} - @5={auc5:.5f} - @10={auc10:.5f} - @20={auc20:.5f}")
-                elif metric == "acc":
-                    acc3 = acc_corner_error(value, 3)
-                    acc5 = acc_corner_error(value, 5)
-                    acc10 = acc_corner_error(value, 10)
-                    acc20 = acc_corner_error(value, 20)
-                    print(f"    * ACC:    @3={acc3:.5f} - @5={acc5:.5f} - @10={acc10:.5f} - @20={acc20:.5f}")
-                elif metric == "diff_rmse": 
-                    avg_value = value / (num_samples)
-                    print(f"    * {metric}:    {avg_value:.5f}")
-                elif metric not in ('rmse_for', 'rmse_inv'):
-                    if self.direction_evaluation != 'both':
+        if self.test_cfg.get('metrics', False):
+            for idx, test_name in enumerate(self.validation_names):
+                print(f"\nTest results for dataset: {test_name}:")
+                num_samples = len(test_dataloaders[idx].dataset)
+                for metric, value in self.metric_results[test_name].items():
+                    if metric == "auc":
+                        auc3  = auc_corner_error(value, 3)
+                        auc5  = auc_corner_error(value, 5)
+                        auc10  = auc_corner_error(value, 10)
+                        auc20  = auc_corner_error(value, 20)
+                        print(f"    * AUC:    @3={auc3:.5f} - @5={auc5:.5f} - @10={auc10:.5f} - @20={auc20:.5f}")
+                    elif metric == "acc":
+                        acc3 = acc_corner_error(value, 3)
+                        acc5 = acc_corner_error(value, 5)
+                        acc10 = acc_corner_error(value, 10)
+                        acc20 = acc_corner_error(value, 20)
+                        print(f"    * ACC:    @3={acc3:.5f} - @5={acc5:.5f} - @10={acc10:.5f} - @20={acc20:.5f}")
+                    elif metric == "diff_rmse": 
                         avg_value = value / (num_samples)
                         print(f"    * {metric}:    {avg_value:.5f}")
-                    else:
-                        avg_value = value / (num_samples*2)     # x2 because we compute the metrics in both directions
-                        print(f"    * {metric}:    {avg_value:.5f}")
-                
-        self.metric_results = {name: {} for name in self.test_cfg['metrics'].keys()}
+                    elif metric not in ('rmse_for', 'rmse_inv'):
+                        if self.direction_evaluation != 'both':
+                            avg_value = value / (num_samples)
+                            print(f"    * {metric}:    {avg_value:.5f}")
+                        else:
+                            avg_value = value / (num_samples*2)     # x2 because we compute the metrics in both directions
+                            print(f"    * {metric}:    {avg_value:.5f}")
+                    
+            self.metric_results = {name: {} for name in self.test_cfg['metrics'].keys()}
+        else:
+            print(f"\nNo metrics to report!", flush=True)
 
     def configure_optimizers(self):
         num_steps_epoch = self.trainer.num_training_batches
