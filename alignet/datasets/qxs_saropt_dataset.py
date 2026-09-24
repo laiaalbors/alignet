@@ -5,6 +5,7 @@ from PIL import Image
 
 import torch
 from torchvision import transforms
+import torchvision.transforms.functional as F
 
 from datasets.base_dataset import BaseDataset
 from utils.registry import DATASET_REGISTRY

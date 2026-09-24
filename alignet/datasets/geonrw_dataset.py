@@ -5,6 +5,7 @@ import pandas as pd
 from PIL import Image
 
 import torch
+import torchvision.transforms.functional as F
 
 from datasets.base_dataset import BaseDataset
 from datasets.utils import PairedRandomCrop, PairedCenterCrop

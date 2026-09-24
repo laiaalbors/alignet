@@ -6,6 +6,7 @@ from PIL import Image
 
 import torch
 from torchvision import transforms
+import torchvision.transforms.functional as F
 
 import rasterio
 from rasterio.warp import reproject
