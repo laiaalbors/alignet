@@ -21,7 +21,7 @@ To set up the environment for ALIGNet, you'll need the following dependencies:
 First, clone the repository and navigate to the project directory:
 
 ```bash
-git clone https://github.com/anonymous-submission/alignet.git
+git clone git@github.com:laiaalbors/alignet.git
 cd alignet
 ```
 
@@ -140,3 +140,14 @@ If you wish to train ALIGNet on ImageNet:
 python alignet/train.py --config "configs/train_alignet_config_affine.yml"
 ```
 
+## Citation
+
+```bibtex
+@inproceedings{albors2026alignet,
+  title={{ALIGN}et: Zero-Shot Multimodal Remote Sensing Image Registration with Sensor-Like Augmentation},
+  author={Laia Albors and Gerard Sant and Carlos Escolano and Ferran Marques},
+  booktitle={ECCV 2026 Workshop TerraBytes II},
+  year={2026},
+  url={https://openreview.net/forum?id=fkdlWb8rg0}
+}
+```
