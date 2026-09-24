@@ -1,13 +1,14 @@
-# Low-Rank Adaptation of ALIGNet for Challenging Cross-Modal Remote Sensing Image Registration
+# Projective ALIGNet with Low-Rank Adaptation for Challenging Cross-Modal Remote Sensing Image Registration
 
 This repository contains the details to reproduce the work presented in [this paper](www.link-to-the-journal-paper.com).
 
 
 ## Overview
 
-ALIGNet is an innovative framework designed for challenging cross-modal remote sensing image registration without requiring expensive and scarce co-registered multimodal training pairs. The method effectively decouples representation learning from geometric alignment by leveraging a frozen Vision Transformer (ViT) encoder pretrained via self-supervised learning on large-scale optical satellite imagery. To bridge the severe radiometric and textural gaps between diverse sensors, a lightweight alignment module—representing only about 20% of the total parameters—is trained on natural images augmented with online, physics-inspired sensor-like transformations that synthesize the appearance of SAR, thermal, elevation, and low-resolution modalities on the fly.
+Multimodal remote-sensing image registration is essential for multi-sensor data fusion but remains challenging due to the severe radiometric and textural differences across imaging modalities. Most deep learning approaches require large-scale, co-registered multimodal datasets that are costly to acquire and limited in sensor diversity, constraining their generalization to unseen modality combinations. We present ALIGNet, a framework that decouples representation learning from geometric alignment to achieve state-of-the-art multimodal registration without requiring real cross-modal training pairs. A frozen encoder pretrained via self-supervised learning on optical satellite imagery provides domain-specific representations, while only a lightweight alignment module―approximately $20\%$ of the total parameters―is trained on natural images augmented with physics-inspired sensor-like transformations that simulate the appearance of SAR, thermal, elevation, and low-resolution modalities. 
 
-Building upon its preliminary conference version, this paper extends the framework by generalizing the geometric alignment model to projective homographies, providing a systematic comparison of remote sensing foundation models, and introducing a parameter-efficient fine-tuning stage based on Low-Rank Adaptation (LoRA). By adding only 1.2% trainable parameters to the frozen encoder, LoRA successfully adapts the model to real cross-modal Earth observation data, closing the residual domain gap on highly heterogeneous sensor combinations. Extensive evaluations across three public benchmarks (MDAS, DREAM, and SSL4EO-S12) and a real-world drone-to-satellite case study demonstrate that ALIGNet achieves state-of-the-art accuracy, yielding an ACC@20 of 86.61% on MDAS (+10.4 points over the second-best method) and 53.49% on DREAM (+21.8 points). Furthermore, the framework demonstrates exceptional robustness on radar and elevation data, alongside the highest bidirectional consistency among existing approaches.
+Building on our preliminary work, this paper generalizes the geometric model to projective transformations and provides a systematic comparison of foundation model encoders. In addition, we introduce a fine-tuning stage in which the full model is further trained on a small amount of real cross-modal data, adapting the frozen encoder through Low-Rank Adaptation (LoRA) with only $7.1$ M new trainable parameters ($2.3\%$ of the encoder). Experiments on three benchmarks (MDAS, DREAM, SSL4EO-S12) and a real-world drone–satellite case study show that the zero-shot variant, ALIGNet\textsubscript{p}, already outperforms every evaluated baseline in mean accuracy without having seen a single real multimodal RS image, and that ALIGNet\textsubscript{pLoRA} achieves the highest overall accuracy, with an ACC@20 of $90.13\%$ on MDAS ($+18.79$ points over the second-best baseline) and $55.51\%$ on DREAM ($+17.33$ points). The advantage is most pronounced on challenging radar–optical and low- vs high-resolution pairs, where competing methods largely fail. Both variants also exhibit the strongest bidirectional consistency among all
+accurate methods.
 
 
 
@@ -21,7 +22,7 @@ To set up the environment for ALIGNet, you'll need the following dependencies:
 First, clone the repository and navigate to the project directory:
 
 ```bash
-git clone https://github.com/anonymous-submission/alignet.git
+git clone git@github.com:laiaalbors/alignet.git
 cd alignet
 ```
 
@@ -39,13 +40,16 @@ pip install albumentations qudida --no-deps
 
 To reproduce the results reported in the paper, you can download the pretrained ALIGNet checkpoints from the following OSF link: https://osf.io/njqux/overview?view_only=70aabfea8c1f47a593386631698f94b5
 
-The archive contains 5 models:
+The archive contains the two models presented in the paper:
 
-*   **proj-SAT-SensorAug-LoRA**: trained on ImageNet with synthetic affine transformations applying sensor-like augmentations, using the encoder pre-trained on SAT-493M, and then fine-tune on real RS data using LoRA for the encoder
-*   **proj-SAT-SensorAug**: trained on ImageNet with synthetic affine transformations applying sensor-like augmentations, using the encoder pre-trained on SAT-493M
-*   **proj-LVD-SensorAug**: trained on ImageNet with synthetic affine transformations applying sensor-like augmentations, using the encoder pre-trained on LVD-1689M
-*   **proj-SAT-TraditionalAug**: trained on ImageNet with synthetic affine transformations applying traditional augmentations, using the encoder pre-trained on SAT-493M
-*   **proj-SAT-NoAug**: trained on ImageNet with synthetic affine transformations applying no augmentations, using the encoder pre-trained on SAT-493M
+*   **alignet_p**: trained on ImageNet with synthetic projective transformations applying sensor-like augmentations, using the encoder pre-trained on SAT-493M
+*   **alignet_pLoRA**: *alignet_p* fine-tuned on ImageNet with sensor-like augmentations and a few real RS samples using LoRA for the encoder
+
+There is also an ```ablation``` folder with the checkpoints from the ablation study:
+*   **projective_imagenet_lvd_sensoraug**: trained on ImageNet with synthetic projective transformations applying sensor-like augmentations, using the encoder pre-trained on LVD-1689M
+*   **projective_imagenet_sat_traditionalaug**: trained on ImageNet with synthetic projective transformations applying traditional augmentations, using the encoder pre-trained on SAT-493M
+*   **projective_imagenet_sat_noaug**: trained on ImageNet with synthetic projective transformations applying no augmentations, using the encoder pre-trained on SAT-493M
+*   **projective_imagenet_sat_lora_in**: *alignet_p* fine-tuned only on ImageNet with sensor-like augmentations
 
 After downloading, create a folder named `checkpoints/` in the root of the repo and place the files inside:
 ```bash

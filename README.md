@@ -8,13 +8,13 @@ This repository contains two research contributions built on ALIGNet:
 
 | | Workshop Paper | Journal Paper |
 |---|---|---|
-| **Title** | *Zero-Shot Multimodal Remote Sensing Image Registration with Sensor-Like Augmentation* | *Low-Rank Adaptation of ALIGNet for Challenging Cross-Modal Remote Sensing Image Registration* |
-| **Venue** | ECCV 2026 Workshop | IEEE TGRS |
+| **Title** | *ALIGNet: Zero-Shot Multimodal Remote Sensing Image Registration with Sensor-Like Augmentation* | *Projective ALIGNet with Low-Rank Adaptation for Challenging Cross-Modal Remote Sensing Image Registration* |
+| **Venue** | ECCV 2026 TerraBytes II Workshop | IEEE TGRS |
 | **Geometric model** | Affine | Projective |
 | **Training data** | ImageNet (synthetic pairs) | ImageNet + real RS data (QXS-SAROPT, GeoNRW, ICGC) |
-| **Fine-tuning** | — | LoRA (1.2% extra parameters) |
+| **Fine-tuning** | — | LoRA (2.3% extra parameters) |
 | **Test benchmarks** | MDAS, DREAM | MDAS, DREAM, SSL4EO-S12 |
-| **Metrics** | RMSE | RMSE, ACC@X, AUC@X |
+| **Metrics** | RMSE, MI, H_err, ΔRMSE_A↔B | RMSE, MI, H_err, ΔRMSE_A↔B, ACC@X, AUC@X |
 | **Details & reproduction** | [📄 Workshop README](docs/README_workshop.md) | [📄 Journal README](docs/README_journal.md) |
 
 
@@ -23,7 +23,7 @@ This repository contains two research contributions built on ALIGNet:
 ### Installation
 
 ```bash
-git clone https://github.com/anonymous-submission/alignet.git
+git clone git@github.com:laiaalbors/alignet.git
 cd alignet
 
 conda create -n alignet python=3.10.18
@@ -45,21 +45,15 @@ mv /path/to/files/*.ckpt checkpoints/
 For dataset preparation, training, evaluation, and full reproduction instructions, refer to the specific README of each paper linked above.
 
 
-## Citation
+## Citations
 
 ```bibtex
-@inproceedings{alignet_workshop,
-  title     = {ALIGNet: Zero-Shot Multimodal Remote Sensing Image Registration with Sensor-Like Augmentation},
-  author    = {Anonymous},
-  booktitle = {ECCV Workshop},
-  year      = {2026}
-}
-
-@article{alignet_journal,
-  title   = {Low-Rank Adaptation of ALIGNet for Challenging Cross-Modal Remote Sensing Image Registration},
-  author  = {Anonymous},
-  journal = {IEEE Transactions on Geoscience and Remote Sensing},
-  year    = {2026}
+@inproceedings{albors2026alignet,
+  title={{ALIGN}et: Zero-Shot Multimodal Remote Sensing Image Registration with Sensor-Like Augmentation},
+  author={Laia Albors and Gerard Sant and Carlos Escolano and Ferran Marques},
+  booktitle={ECCV 2026 Workshop TerraBytes II},
+  year={2026},
+  url={https://openreview.net/forum?id=fkdlWb8rg0}
 }
 ```
 
