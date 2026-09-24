@@ -39,12 +39,15 @@ pip install albumentations qudida --no-deps
 
 To reproduce the results reported in the paper, you can download the pretrained ALIGNet checkpoints from the following OSF link: https://osf.io/njqux/overview?view_only=70aabfea8c1f47a593386631698f94b5
 
-The archive contains 4 models:
+The archive contains the model presented in the paper:
 
-*   **affine-SAT-SensorAug**: trained on ImageNet with synthetic affine transformations applying sensor-like augmentations, using the encoder pre-trained on SAT-493M
-*   **affine-LVD-SensorAug**: trained on ImageNet with synthetic affine transformations applying sensor-like augmentations, using the encoder pre-trained on LVD-1689M
-*   **affine-SAT-TraditionalAug**: trained on ImageNet with synthetic affine transformations applying traditional augmentations, using the encoder pre-trained on SAT-493M
-*   **affine-SAT-NoAug**: trained on ImageNet with synthetic affine transformations applying no augmentations, using the encoder pre-trained on SAT-493M
+*   **alignet_a**: trained on ImageNet with synthetic affine transformations applying sensor-like augmentations, using the encoder pre-trained on SAT-493M
+
+There is also an `ablation` folder with the checkpoints from the ablation study:
+
+*   **affine_imagenet_lvd_sensoraug**: trained on ImageNet with synthetic affine transformations applying sensor-like augmentations, using the encoder pre-trained on LVD-1689M
+*   **affine_imagenet_sat_traditionalaug**: trained on ImageNet with synthetic affine transformations applying traditional augmentations, using the encoder pre-trained on SAT-493M
+*   **affine_imagenet_sat_noaug**: trained on ImageNet with synthetic affine transformations applying no augmentations, using the encoder pre-trained on SAT-493M
 
 After downloading, create a folder named `checkpoints/` in the root of the repo and place the files inside:
 ```bash
