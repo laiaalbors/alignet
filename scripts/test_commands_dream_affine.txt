@@ -1,0 +1,10 @@
+time python -W ignore alignet/test.py --config "./configs/test_classical_config_affine_dream.yml" --override datasets.test_1.path=./files/test/dream_test_affine_pairs/dream_test_affine_optique_radar.csv
+time python -W ignore alignet/test.py --config "./configs/test_classical_config_affine_dream.yml" --override datasets.test_1.path=./files/test/dream_test_affine_pairs/dream_test_affine_optique_S1.csv
+time python -W ignore alignet/test.py --config "./configs/test_classical_config_affine_dream.yml" --override datasets.test_1.path=./files/test/dream_test_affine_pairs/dream_test_affine_optique_S2.csv
+time python -W ignore alignet/test.py --config "./configs/test_classical_config_affine_dream.yml" --override datasets.test_1.path=./files/test/dream_test_affine_pairs/dream_test_affine_optique_SRTM.csv
+time python -W ignore alignet/test.py --config "./configs/test_classical_config_affine_dream.yml" --override datasets.test_1.path=./files/test/dream_test_affine_pairs/dream_test_affine_radar_S1.csv
+time python -W ignore alignet/test.py --config "./configs/test_classical_config_affine_dream.yml" --override datasets.test_1.path=./files/test/dream_test_affine_pairs/dream_test_affine_radar_S2.csv
+time python -W ignore alignet/test.py --config "./configs/test_classical_config_affine_dream.yml" --override datasets.test_1.path=./files/test/dream_test_affine_pairs/dream_test_affine_radar_SRTM.csv
+time python -W ignore alignet/test.py --config "./configs/test_classical_config_affine_dream.yml" --override datasets.test_1.path=./files/test/dream_test_affine_pairs/dream_test_affine_S1_S2.csv
+time python -W ignore alignet/test.py --config "./configs/test_classical_config_affine_dream.yml" --override datasets.test_1.path=./files/test/dream_test_affine_pairs/dream_test_affine_S1_SRTM.csv
+time python -W ignore alignet/test.py --config "./configs/test_classical_config_affine_dream.yml" --override datasets.test_1.path=./files/test/dream_test_affine_pairs/dream_test_affine_S2_SRTM.csv
