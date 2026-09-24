@@ -100,9 +100,12 @@ if __name__ == "__main__":
     model = model_class(config, val_names=test_names)
     print(model, flush=True)
 
-    ckpt = torch.load(config["test"]["checkpoint_path"], map_location="cpu")
-    model.load_state_dict(ckpt["state_dict"], strict=True)
-    print(f"[TEST] Checkpoint in {config['test']['checkpoint_path']} loaded.")
+    if config["test"].get("checkpoint_path", None):
+        ckpt = torch.load(config["test"]["checkpoint_path"], map_location="cpu")
+        model.load_state_dict(ckpt["state_dict"], strict=True)
+        print(f"[TEST] Checkpoint in {config['test']['checkpoint_path']} loaded.")
+    else:
+        print(f"[TEST] No checkpoint given for test!.")
 
     print(f"[TEST] Starting test...")
     trainer.test(model, test_loaders)
